@@ -2,7 +2,8 @@ const test = require('ava')
 const MediaInfo = require('mediainfo.js')
 
 const { promises: { readFile, open } } = require('fs')
-const { readChunkBrowser, readChunkNode, checkLimits } = require('../helpers/shared-helpers.js')
+const { readChunkBrowser, checkLimits } = require('../helpers/shared-helpers.js')
+const { readChunkNode } = require('../helpers/server-helpers.js')
 
 const filepath = './test/sample-media.mp4'
 

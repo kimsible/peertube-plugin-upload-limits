@@ -1,6 +1,7 @@
 const MediaInfo = require('mediainfo.js')
 const { promises: { open } } = require('fs')
-const { checkLimits, readChunkNode } = require('./helpers/shared-helpers.js')
+const { checkLimits } = require('./helpers/shared-helpers.js')
+const { readChunkNode } = require('./helpers/server-helpers.js')
 
 async function register ({ registerSetting, settingsManager, registerHook }) {
   registerSetting({
