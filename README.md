@@ -21,14 +21,14 @@ See the server side checking as a **security validation**.
 
 ### Screenshots
 
-![Settings](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin.png)
+<div style=text-align:center>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert.png>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast.png>
+</div>
 
-![Instructions Alert](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert.png)
-
-![Input Spinner](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-spinner.png)
-
-![Toast](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast.png)
-
+<div style=text-align:center>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin.png>
+</div>
 
 ### Development
 
