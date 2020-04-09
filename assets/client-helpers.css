@@ -22,7 +22,7 @@
 
 .disabled-input-spinner {
   display: inline-block;
-  width: 19px;
+  width: 14px;
   height: 19px;
   vertical-align: middle;
 }
@@ -30,8 +30,8 @@
 .disabled-input-spinner:after {
   content: " ";
   display: block;
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   margin: 1px;
   border-radius: 50%;
   border: 2px solid #fff;
