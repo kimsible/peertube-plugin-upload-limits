@@ -1,23 +1,26 @@
 # PeerTube plugin Upload Limits
 
-This plugin adds an instructions alert above the upload form and upload limits (file size, video bit rate, audio bit rate) for a media input.
+This plugin adds an instructions alert above the upload form and upload limits (file size, video bit rate, audio bit rate) for a media input. All these are editable in plugin settings :
 
-All are editable in plugin settings :
+- **Instructions** formated in markdown
+- **Maximum file size** in Mega octets / Mega bytes
+- **Maximum video bit rate** in Mega bits per seconds
+- **Maximum audio bit rate** in kilo bits per seconds
 
-- Instructions formated in markdown
-- Maximum file size in Mega octets / Mega bytes
-- Maximum video bit rate in Mega bits per seconds
-- Maximum audio bit rate in kilo bits per seconds
+### Overall steps
 
-Upload limits are checked both client and server side with [the JavaScript port of MediaInfo](https://mediainfo.js.org/) using [WebAssembly](https://webassembly.org/).
+- On client side, when limits are not fullfilled, the upload is not proceed and the user is notified with a PeerTube toast.
+- On server side after uploading, when limits are not fullfilled, uploaded video / audio file is not accepted. See the server side checking as a **security validation**.
 
-Instructions are parsed and outputted in HTML only client side with [Marked.js](https://marked.js.org).
+### URL and Torrent import
 
-On client side, when limits are not fullfilled, the upload is not proceed and the user is notified with a PeerTube toast.
+Unfortunately, no limits for import with URL or torrent for the moment.
 
-On server side after uploading, when limits are not fullfilled, uploaded video / audio file is not accepted.
+### Dependencies
 
-See the server side checking as a **security validation**.
+- Upload limits are checked both client and server side with [the JavaScript port of MediaInfo](https://mediainfo.js.org/) using [WebAssembly](https://webassembly.org/).
+
+- Instructions are parsed and outputted in HTML only client side with [Marked.js](https://marked.js.org).
 
 ### Screenshots
 
@@ -27,6 +30,7 @@ See the server side checking as a **security validation**.
 </div>
 
 <div style=text-align:center>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-spinner.png>
   <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin.png>
 </div>
 
