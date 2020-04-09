@@ -19,6 +19,16 @@ On server side after uploading, when limits are not fullfilled, uploaded video /
 
 See the server side checking as a **security validation**.
 
+### Screenshots
+
+![Settings](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin.png)
+
+![Instructions Alert](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert.png)
+
+![Input Spinner](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-spinner.png)
+
+![Toast](https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast.png)
+
 
 ### Development
 
