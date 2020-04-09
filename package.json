@@ -11,6 +11,18 @@
       "scopes": [
         "common"
       ]
+    },
+    {
+      "script": "dist/0.common-client-plugin.js",
+      "scopes": []
+    },
+    {
+      "script": "dist/1.common-client-plugin.js",
+      "scopes": []
+    },
+    {
+      "script": "dist/mediainfo.wasm",
+      "scopes": []
     }
   ],
   "css": [
@@ -42,9 +54,7 @@
     "prepare": "npm run build",
     "build": "webpack --mode=production"
   },
-  "staticDirs": {
-    "web-assembly": "public/web-assembly"
-  },
+  "staticDirs": {},
   "translations": {
     "fr-FR": "./languages/fr.json",
     "en-US": "./languages/en.json"

@@ -3,11 +3,13 @@ const path = require('path')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const EsmWebpackPlugin = require('@purtuga/esm-webpack-plugin')
 
-const { mediainfoWasmPath } = require('./globals.js')
+const { version } = require('./package.json')
+const publicPath = `/plugins/upload-limits/${version}/client-scripts/dist/`
 
 const config = {
-  entry: ['mediainfo.js/dist/mediainfo.min.js', './client/common-client-plugin.js'],
+  entry: './client/common-client-plugin.js',
   output: {
+    publicPath,
     path: path.resolve(__dirname, './dist'),
     filename: './common-client-plugin.js',
     library: 'script',
@@ -23,7 +25,7 @@ const config = {
             loader: 'string-replace-loader',
             options: {
               search: 'mediainfo.wasm',
-              replace: mediainfoWasmPath
+              replace: `${publicPath}mediainfo.wasm`
             }
           }
         ]
@@ -37,7 +39,7 @@ const config = {
     new EsmWebpackPlugin(),
     new CopyWebpackPlugin([{
       from: './node_modules/mediainfo.js/dist/mediainfo.wasm',
-      to: '../public/web-assembly/mediainfo.wasm'
+      to: './mediainfo.wasm'
     }])
   ]
 }

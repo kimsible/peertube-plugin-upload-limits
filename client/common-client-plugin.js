@@ -1,7 +1,5 @@
 import MediaInfo from 'mediainfo'
-import marked from 'marked'
 
-import { mediainfoWasmPath } from '../globals.js'
 import { createAlert, createToast, injectToast, injectAlert, disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
@@ -54,6 +52,8 @@ async function initClient ({ path, peertubeHelpers }) {
     const { instructions, fileSize, videoBitrate, audioBitrate } = await peertubeHelpers.getSettings()
 
     if (instructions) {
+      // Lazy load marked
+      const { default: marked } = await import('marked')
       injectAlert(createAlert('info', marked(instructions, { sanitize: true, breaks: true })))
     }
 
@@ -69,8 +69,9 @@ async function initClient ({ path, peertubeHelpers }) {
     videofile.setAttribute('style', 'display:none')
     videofile.parentElement.insertBefore(clonedVideofile, videofile)
 
-    // Load translations
-    // and fetch mediainfo.wasm to ensure fully cached
+    // - Load translations
+    // - Lazy load MediaInfo
+    // - Fetch mediainfo.wasm to ensure fully cached
     const [
       fileSizeError,
       videoBitrateError,
@@ -81,7 +82,8 @@ async function initClient ({ path, peertubeHelpers }) {
       peertubeHelpers.translate('upload-limits-client-videoBitrate-error'),
       peertubeHelpers.translate('upload-limits-client-audioBitrate-error'),
       peertubeHelpers.translate('upload-limits-client-toast-error-title'),
-      window.fetch(mediainfoWasmPath)
+      import('mediainfo.js'),
+      window.fetch(`${peertubeHelpers.getBaseStaticRoute().replace('static', 'client-scripts/dist')}/mediainfo.wasm`)
     ])
 
     // Re-enable cloned videofile input once plugin is fully loaded
