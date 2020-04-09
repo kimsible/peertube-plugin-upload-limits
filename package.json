@@ -1,0 +1,72 @@
+{
+  "name": "peertube-plugin-upload-limits",
+  "description": "PeerTube plugin Upload Limits",
+  "version": "0.1.0",
+  "author": "kimsible",
+  "license": "AGPL-3.0",
+  "bugs": "https://github.com/kimsible/peertube-plugin-upload-limits/issues",
+  "clientScripts": [
+    {
+      "script": "dist/common-client-plugin.js",
+      "scopes": [
+        "common"
+      ]
+    }
+  ],
+  "css": [
+    "assets/client-helpers.css"
+  ],
+  "devDependencies": {
+    "@purtuga/esm-webpack-plugin": "^1.1.1",
+    "ava": "^3.6.0",
+    "browser-env": "^3.3.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.1.2",
+    "script-loader": "^0.7.2",
+    "standard": "^14.3.3",
+    "string-replace-loader": "^2.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "engine": {
+    "peertube": ">=2.1.1"
+  },
+  "homepage": "https://github.com/kimsible/peertube-plugin-upload-limits",
+  "keywords": [
+    "peertube",
+    "plugin"
+  ],
+  "library": "./main.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "webpack --mode=production"
+  },
+  "staticDirs": {
+    "web-assembly": "public/web-assembly"
+  },
+  "translations": {
+    "fr-FR": "./languages/fr.json",
+    "en-US": "./languages/en.json"
+  },
+  "dependencies": {
+    "marked": "^0.8.2",
+    "mediainfo.js": "0.0.3"
+  },
+  "ava": {
+    "require": [
+      "./test/_setup-browser-env.js"
+    ],
+    "files": [
+      "./test/*.test.js"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "standard --fix"
+  }
+}
