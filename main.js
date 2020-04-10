@@ -68,7 +68,7 @@ async function register ({ registerSetting, settingsManager, registerHook }) {
       } catch (error) {
         console.log('[Plugin Upload Limits]', 'NOT-ACCEPTED', error)
 
-        return { accepted: false }
+        return { accepted: false, errorMessage: error.message }
       }
     }
   })
