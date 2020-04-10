@@ -78,5 +78,8 @@
   },
   "lint-staged": {
     "*.js": "standard --fix"
+  },
+  "standard": {
+    "globals": ["MediaInfo"]
   }
 }

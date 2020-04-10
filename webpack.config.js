@@ -32,9 +32,6 @@ const config = {
       }
     ]
   },
-  externals: {
-    mediainfo: 'MediaInfo'
-  },
   plugins: [
     new EsmWebpackPlugin(),
     new CopyWebpackPlugin([{
