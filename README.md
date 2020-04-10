@@ -51,8 +51,8 @@ Small script to test the plugin :
 ```bash
 #!/bin/bash
 
-PLUGIN_NAME=peertube-plugin-upload-limits
-PLUGIN_PATH=/var/peertube/docker-volume/data/plugins/$PLUGIN_NAME
+PLUGIN_NAME=$1
+PLUGIN_PATH=/var/peertube/docker-volume/data/plugins/peertube-plugin-$PLUGIN_NAME
 
 # Build client
 npx webpack --mode=development
@@ -74,11 +74,11 @@ POSTGRES_USER="`grep -E -o "POSTGRES_USER=(.+)" .env | sed -E "s/POSTGRES_USER=/
 POSTGRES_DB="`grep -E -o "POSTGRES_DB=(.+)" .env | sed -E "s/POSTGRES_DB=//g"`"
 
 # Uninstall existing plugin
-docker-compose exec -T postgres psql -U $POSTGRES_USER $POSTGRES_DB -c "delete from plugin where name = 'upload-limits'"
+sudo docker-compose exec -T postgres psql -U $POSTGRES_USER $POSTGRES_DB -c "delete from plugin where name = '$PLUGIN_NAME'"
 
 # Install plugin
-docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:install -- --plugin-path /data/plugins/$PLUGIN_NAME
+sudo docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:install -- --plugin-path /data/plugins/peertube-plugin-$PLUGIN_NAME
 
 # Restart PeerTube
-systemctl restart peertube
+sudo systemctl restart peertube
 ```
