@@ -52,7 +52,7 @@ async function initClient ({ path, peertubeHelpers }) {
     if (instructions) {
       // Lazy load marked
       const { default: marked } = await import('marked')
-      injectAlert(createAlert('info', marked(instructions, { sanitize: true, breaks: true })))
+      injectAlert(createAlert('info', marked(instructions, { breaks: true })))
     }
 
     if (!fileSize && !videoBitrate && !audioBitrate) {
