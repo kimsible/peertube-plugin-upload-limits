@@ -1,7 +1,7 @@
 {
   "name": "peertube-plugin-upload-limits",
   "description": "PeerTube plugin Upload Limits",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "kimsible",
   "license": "AGPL-3.0",
   "bugs": "https://github.com/kimsible/peertube-plugin-upload-limits/issues",
