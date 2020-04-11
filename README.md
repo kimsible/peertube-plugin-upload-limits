@@ -42,30 +42,45 @@ Unfortunately, no limits for import with URL or torrent for the moment.
 $ npx ava -v
 ```
 
-#### Test locally
+#### Test in a local PeerTube for developing
 
-Test locally with the official docker setup installed with [install-peertube](https://github.com/kimsible/install-peertube).
+With the local plugin :
 
+```bash
+npm run plugin:install -- --plugin-path /path/to/plugin
+```
 
-Small script to test the plugin :
+Or with the remote npm package :
+
+```bash
+npm run plugin:install -- --npm-name peertube-plugin-upload-limits
+```
+
+#### Test in a local PeerTube for production
+
+Here is a small script to test the plugin locally in a full PeerTube docker setup ready for production :
+
 ```bash
 #!/bin/bash
+# ./test-upload-limits.sh [PLUGIN_DIR]
 
-PLUGIN_NAME=$1
-PLUGIN_PATH=/var/peertube/docker-volume/data/plugins/peertube-plugin-$PLUGIN_NAME
+PLUGIN_DIR=$1
+PEERTUBE_DIR=$PWD
+PLUGIN_NAME='upload-limits'
 
-# Build client
-npx webpack --mode=development
+if [ ! -z $PLUGIN_DIR ]; then
+  PLUGIN_TMP=$PEERTUBE_DIR/docker-volume/data/tmp/peertube-plugin-$PLUGIN_NAME
 
-# Clean existing plugin path
-sudo rm -rf $PLUGIN_PATH
-sudo mkdir -p $PLUGIN_PATH
+  # Build client
+  npx webpack --mode=development
 
-# Copy new files
-sudo cp -R . $PLUGIN_PATH
+  # Clean existing plugin tmp
+  sudo rm -rf $PLUGIN_TMP
+  sudo mkdir -p $PLUGIN_TMP
 
-# Go to peertube dir
-cd /var/peertube
+  # Copy new files
+  sudo cp -R $PLUGIN_DIR $PLUGIN_TMP
+fi
 
 # Get postgres user
 POSTGRES_USER="`grep -E -o "POSTGRES_USER=(.+)" .env | sed -E "s/POSTGRES_USER=//g"`"
@@ -74,11 +89,15 @@ POSTGRES_USER="`grep -E -o "POSTGRES_USER=(.+)" .env | sed -E "s/POSTGRES_USER=/
 POSTGRES_DB="`grep -E -o "POSTGRES_DB=(.+)" .env | sed -E "s/POSTGRES_DB=//g"`"
 
 # Uninstall existing plugin
-sudo docker-compose exec -T postgres psql -U $POSTGRES_USER $POSTGRES_DB -c "delete from plugin where name = '$PLUGIN_NAME'"
+sudo docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:uninstall -- --npm-name peertube-plugin-$PLUGIN_NAME
 
 # Install plugin
-sudo docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:install -- --plugin-path /data/plugins/peertube-plugin-$PLUGIN_NAME
+if [ ! -z $PLUGIN_DIR ]; then
+  sudo docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:install -- --plugin-path /data/tmp/peertube-plugin-$PLUGIN_NAME
+else
+  sudo docker-compose exec -u peertube -e NODE_CONFIG_DIR=/config -e NODE_ENV=production peertube npm run plugin:install -- --npm-name peertube-plugin-$PLUGIN_NAME
+fi
 
 # Restart PeerTube
-sudo systemctl restart peertube
+sudo docker-compose restart peertube
 ```
