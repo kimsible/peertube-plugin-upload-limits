@@ -13,7 +13,7 @@
       ]
     },
     {
-      "script": "dist/0.common-client-plugin.js",
+      "script": "dist/2.common-client-plugin.js",
       "scopes": []
     },
     {
