@@ -185,7 +185,7 @@ class HelperPlugin {
   getTranslation (limit) {
     return this.peertubeHelpers.translate(`upload-limits-client-${limit}-error`)
       .then(translation => {
-        this.translations[limit] = translation
+        this.translations[`${limit}Error`] = translation
 
         return translation
       })
