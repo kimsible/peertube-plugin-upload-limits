@@ -133,7 +133,7 @@ async function handler ({ path, peertubeHelpers }) {
         try {
           // Fetch mediainfo.wasm to ensure fully cached
           if (needMediaInfoLib) {
-            await window.fetch(`${peertubeHelpers.getBaseStaticRoute().replace('static', 'client-scripts/dist')}/mediainfo.wasm`)
+            await window.fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
           }
 
           await checkLimits({
