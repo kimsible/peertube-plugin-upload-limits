@@ -2,5 +2,5 @@
   "upload-limits-client-fileSize-error": "File size exceeds the maximum allowed:",
   "upload-limits-client-videoBitrate-error": "Video bit rate exceeds the maximum allowed:",
   "upload-limits-client-audioBitrate-error": "Audio bit rate exceeds the maximum allowed:",
-  "upload-limits-client-toast-title-error": "Error"
+  "upload-limits-client-toastTitle-error": "Error"
 }

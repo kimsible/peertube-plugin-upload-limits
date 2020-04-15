@@ -151,7 +151,7 @@ async function handler ({ path, peertubeHelpers }) {
         } catch (error) {
           // Notify user with as toast as errors
           error.message.split('\n').forEach(error => {
-            injectToast(createToast('error', { title: helperPlugin.translations['toast-title'], content: error }))
+            injectToast(createToast('error', { title: helperPlugin.translations.toastTitleError, content: error }))
           })
 
           // Restore original label text and re-enable cloned video file
@@ -226,7 +226,7 @@ class HelperPlugin {
     }
 
     if (this.settings.fileSize !== undefined || this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined) {
-      promises.push(this.getTranslation('toast-title'))
+      promises.push(this.getTranslation('toastTitle'))
     }
 
     return Promise.all(promises)
