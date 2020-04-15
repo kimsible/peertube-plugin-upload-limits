@@ -29,6 +29,7 @@
     "ava": "^3.6.0",
     "browser-env": "^3.3.0",
     "copy-webpack-plugin": "^5.1.1",
+    "dotenv": "^8.2.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.1.3",
     "script-loader": "^0.7.2",
@@ -47,8 +48,9 @@
   ],
   "library": "./main.js",
   "scripts": {
+    "dev": "webpack --env.dev",
     "prepare": "npm run build",
-    "build": "webpack --mode=production"
+    "build": "webpack --env.prod"
   },
   "staticDirs": {
     "wasm": "./assets/wasm"
