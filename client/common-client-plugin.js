@@ -72,7 +72,7 @@ async function handler ({ path, peertubeHelpers }) {
       const videofile = document.getElementById('videofile')
 
       if (outdatedBrowser) {
-        injectAlert(createAlert('error', 'Your web browser is out of date <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
+        injectAlert(createAlert('warning', 'Your web browser is out of date <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
         // Disable videofile input without spinner
         disableInputFile(videofile, false)
         throw new Error('Your web browser is out of date')
