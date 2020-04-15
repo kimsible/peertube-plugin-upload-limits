@@ -11,43 +11,14 @@ async function register ({ registerHook, peertubeHelpers }) {
   }
 }
 
-function init (peertubeHelpers) {
-  let outdatedBrowser
-
-  // Checking fetch and WebAssembly browser support
-  if (!window.fetch || !(typeof window.WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function')) {
-    outdatedBrowser = true
-  }
-
-  // Instanciate HelperPlugin
-  const helperPlugin = new HelperPlugin(peertubeHelpers)
-
-  return { outdatedBrowser, helperPlugin }
-}
-
 async function handler ({ path, peertubeHelpers }) {
-  const handleError = (error) => {
-    console.error(error)
-  }
-
   try {
     // Init
-    const { outdatedBrowser, helperPlugin } = init(peertubeHelpers)
-
-    const waitForSettings = () => {
-      return helperPlugin.getSettings()
-        .then(({ hasInstructions, needMediaInfoLib }) => {
-          helperPlugin.lazyLoadTranslations().catch(handleError)
-          if (hasInstructions) helperPlugin.instructions().catch(handleError)
-          // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
-
-          return helperPlugin
-        })
-    }
+    const helperPlugin = new HelperPlugin(peertubeHelpers)
 
     // If entry-route is not /videos/upload lazy load all plugin
     if (path !== '/videos/upload') {
-      await waitForSettings()
+      await waitForSettings(helperPlugin)
       return
     }
 
@@ -55,11 +26,8 @@ async function handler ({ path, peertubeHelpers }) {
       { hasInstructions },
       { videofile, clonedVideofile }
     ] = await Promise.all([
-      waitForSettings(),
-      waitForRendering({
-        outdatedBrowser,
-        helperPlugin
-      })
+      waitForSettings(helperPlugin),
+      waitForRendering(helperPlugin)
     ])
 
     if (hasInstructions) {
@@ -161,7 +129,22 @@ function hookUploadInput ({
   })
 }
 
-async function waitForRendering ({ outdatedBrowser, helperPlugin }) {
+function handleError (error) {
+  console.error(error)
+}
+
+function waitForSettings (helperPlugin) {
+  return helperPlugin.getSettings()
+    .then(({ hasInstructions, needMediaInfoLib }) => {
+      helperPlugin.lazyLoadTranslations().catch(handleError)
+      if (hasInstructions) helperPlugin.instructions().catch(handleError)
+      // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
+
+      return helperPlugin
+    })
+}
+
+async function waitForRendering (helperPlugin) {
   // Waiting for DOMContent updated with a timeout of 5 seconds
   await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -183,13 +166,7 @@ async function waitForRendering ({ outdatedBrowser, helperPlugin }) {
 
   // First rendering
   if (helperPlugin) {
-    firstRendering({ outdatedBrowser, helperPlugin })
-  }
-
-  if (outdatedBrowser) {
-    // Disable videofile input without spinner
-    disableInputFile(videofile, false)
-    throw new Error('Your web browser is out of date')
+    createTabObserver(helperPlugin)
   }
 
   // Clone and hide the videofile input to not dispatch-event default upload
@@ -202,38 +179,31 @@ async function waitForRendering ({ outdatedBrowser, helperPlugin }) {
   return { videofile, clonedVideofile }
 }
 
-function firstRendering ({ outdatedBrowser, helperPlugin }) {
-  if (outdatedBrowser) {
-    injectAlert(createAlert('warning', 'Your web browser is out of date <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
-    return
-  }
+function createTabObserver (helperPlugin) {
+  const tab = document.querySelectorAll('.nav .nav-link')[0]
 
-  // Re-run hookUploadInput once first tab is selected
-  if (typeof window.MutationObserver === 'function') {
-    const tab = document.querySelectorAll('.nav .nav-link')[0]
+  const observer = new MutationObserver(async mutations => {
+    for (const mutation of mutations) {
+      const { type, attributeName, target } = mutation
 
-    const observer = new MutationObserver(async mutations => {
-      for (const mutation of mutations) {
-        const { type, attributeName, target } = mutation
+      // Re-run hookUploadInput once first tab is selected
+      if ((type === 'attributes') && (attributeName === 'aria-selected')) {
+        const selected = target.getAttribute('aria-selected')
 
-        if ((type === 'attributes') && (attributeName === 'aria-selected')) {
-          const selected = target.getAttribute('aria-selected')
+        if (selected) {
+          const { videofile, clonedVideofile } = await waitForRendering()
 
-          if (selected) {
-            const { videofile, clonedVideofile } = await waitForRendering({ outdatedBrowser })
-
-            hookUploadInput({
-              videofile,
-              clonedVideofile,
-              helperPlugin
-            })
-          }
+          hookUploadInput({
+            videofile,
+            clonedVideofile,
+            helperPlugin
+          })
         }
       }
-    })
+    }
+  })
 
-    observer.observe(tab, { attributes: true })
-  }
+  observer.observe(tab, { attributes: true })
 }
 
 class HelperPlugin {

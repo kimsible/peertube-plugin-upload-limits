@@ -50,27 +50,23 @@ function injectToast (toast, timeout = 10000) {
   }, timeout)
 }
 
-// Using old DOM functions for old-browser compatibility
 function createAlert (type, content) {
   const alert = document.createElement('div')
-  alert.className = `alert alert-${type}`
+  alert.classList.add('alert', `alert-${type}`)
   alert.innerHTML = content
   return alert
 }
 
-// Using old DOM functions for old-browser compatibility
 function injectAlert (alert) {
-  const container = document.querySelector('my-videos-add').childNodes[0]
-  container.insertBefore(alert, container.childNodes[0])
+  const container = document.querySelector('my-videos-add').firstChild
+  container.insertBefore(alert, container.firstChild)
 }
 
-// Using old DOM functions for old-browser compatibility
-// For old browsers use disableInputFile(input, false)
 function disableInputFile (input, spinner = true) {
-  const container = input.parentElement || input.parentNode
-  const span = container.childNodes[0]
+  const container = input.parentElement
+  const span = container.firstChild
   input.setAttribute('disabled', true)
-  container.className = `${container.className} disabled`
+  container.classList.add('disabled')
   if (spinner) {
     span.setAttribute('_innerText', span.innerText)
     span.innerText = ''

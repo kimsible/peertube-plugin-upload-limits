@@ -104,7 +104,7 @@ function testDisableEnableInputFile (t, disable, spinner) {
   if (disable === true) {
     disableInputFile(input, spinner)
     t.is(input.getAttribute('disabled'), 'true')
-    t.is(container.classList.value, ' disabled')
+    t.is(container.classList.value, 'disabled')
     if (spinner) {
       t.is(span.classList.value, 'disabled-input-spinner')
       t.not(span.innerText, innerText)
@@ -116,7 +116,7 @@ function testDisableEnableInputFile (t, disable, spinner) {
     }
     enableInputFile(input)
     t.is(input.getAttribute('disabled'), null)
-    t.not(container.classList.value, ' disabled')
+    t.not(container.classList.value, 'disabled')
     t.is(span.getAttribute('_innerText'), null)
     t.is(span.innerText, innerText)
     t.not(span.classList.value, 'disabled-input-spinner')
