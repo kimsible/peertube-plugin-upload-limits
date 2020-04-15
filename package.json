@@ -79,7 +79,9 @@
     "globals": [
       "MediaInfo",
       "fetch",
-      "WebAssembly"
+      "WebAssembly",
+      "Event",
+      "MutationObserver"
     ]
   }
 }

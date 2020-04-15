@@ -45,48 +45,6 @@ async function handler ({ path, peertubeHelpers }) {
         })
     }
 
-    const waitForRendering = async () => {
-      // Waiting for DOMContent updated with a timeout of 5 seconds
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          clearInterval(interval)
-          reject(new Error('DOMContent cannot be loaded'))
-        }, 5000)
-
-        // Waiting for videofile input in DOM
-        const interval = setInterval(() => {
-          if (document.getElementById('videofile') !== null) {
-            clearTimeout(timeout)
-            clearInterval(interval)
-            resolve()
-          }
-        }, 10)
-      })
-
-      const videofile = document.getElementById('videofile')
-
-      if (outdatedBrowser) {
-        injectAlert(createAlert('warning', 'Your web browser is out of date, you can only benefit video checking server-side <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
-        return {}
-      }
-
-      // No support with multitabs (activated URL and Torrent imports)
-      const tabs = document.querySelectorAll('.video-add-tabset > .nav-tabs .nav-item')
-      if (tabs.length > 1) {
-        injectAlert(createAlert('warning', 'No video checking support with enabled URL or torrent import.'))
-        return { tabs }
-      }
-
-      // Clone and hide the videofile input to not dispatch-event default upload
-      const clonedVideofile = videofile.cloneNode(true)
-      clonedVideofile.setAttribute('id', 'cloned-videofile')
-      videofile.setAttribute('style', 'display:none')
-      videofile.setAttribute('disabled', true)
-      videofile.parentElement.appendChild(clonedVideofile)
-
-      return { videofile, clonedVideofile, tabs }
-    }
-
     // If entry-route is not /videos/upload lazy load all plugin
     if (path !== '/videos/upload') {
       await waitForSettings()
@@ -94,9 +52,15 @@ async function handler ({ path, peertubeHelpers }) {
     }
 
     const [
-      { settings, hasInstructions, needMediaInfoLib },
-      { videofile, clonedVideofile, tabs }
-    ] = await Promise.all([waitForSettings(), waitForRendering()])
+      { hasInstructions },
+      { videofile, clonedVideofile }
+    ] = await Promise.all([
+      waitForSettings(),
+      waitForRendering({
+        outdatedBrowser,
+        helperPlugin
+      })
+    ])
 
     if (hasInstructions) {
       // Make sure instructions are cached
@@ -119,66 +83,156 @@ async function handler ({ path, peertubeHelpers }) {
         })
     }
 
-    if (outdatedBrowser || tabs.length > 1) return
-
-    const dispatchChangeToOriginVideofile = () => {
-      videofile.removeAttribute('disabled')
-      videofile.dispatchEvent(new window.Event('change'))
-    }
-
-    clonedVideofile.addEventListener('change', async () => {
-      const file = clonedVideofile.files[0]
-
-      if (file) {
-        const { fileSize } = settings
-        if (!fileSize && !needMediaInfoLib) {
-          // Copy FileList to original videofile input and dispatch-event change
-          videofile.files = clonedVideofile.files
-
-          dispatchChangeToOriginVideofile()
-          return
-        }
-
-        // Disable cloned videofile input to display spinner while checking limits
-        disableInputFile(clonedVideofile)
-
-        try {
-          // Fetch mediainfo.wasm to ensure fully cached
-          if (needMediaInfoLib) {
-            await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
-          }
-
-          await checkLimits({
-            MediaInfo,
-            getSize: () => file.size,
-            readChunk: readChunkBrowser(file),
-            limits: settings,
-            translations: helperPlugin.translations
-          })
-
-          // Copy FileList to original videofile input and dispatch-event change
-          videofile.files = clonedVideofile.files
-
-          dispatchChangeToOriginVideofile()
-        } catch (error) {
-          const { notifier } = peertubeHelpers
-
-          // Notify user with as toast as errors
-          error.message.split('\n').forEach(error => {
-            if (notifier !== undefined) {
-              notifier.error(error)
-            } else {
-              injectToast(createToast('error', { title: helperPlugin.translations.toastTitleError, content: error }))
-            }
-          })
-
-          // Restore original label text and re-enable cloned video file
-          enableInputFile(clonedVideofile)
-        }
-      }
+    hookUploadInput({
+      videofile,
+      clonedVideofile,
+      helperPlugin
     })
   } catch (error) {
     handleError(error)
+  }
+}
+
+function hookUploadInput ({
+  videofile,
+  clonedVideofile,
+  helperPlugin
+}) {
+  const dispatchChangeToOriginVideofile = () => {
+    videofile.removeAttribute('disabled')
+    videofile.dispatchEvent(new Event('change'))
+  }
+
+  clonedVideofile.addEventListener('change', async () => {
+    const file = clonedVideofile.files[0]
+
+    if (file) {
+      const { settings, needMediaInfoLib, peertubeHelpers } = helperPlugin
+
+      const { fileSize } = settings
+      if (!fileSize && !needMediaInfoLib) {
+        // Copy FileList to original videofile input and dispatch-event change
+        videofile.files = clonedVideofile.files
+
+        dispatchChangeToOriginVideofile()
+        return
+      }
+
+      // Disable cloned videofile input to display spinner while checking limits
+      disableInputFile(clonedVideofile)
+
+      try {
+        // Fetch mediainfo.wasm to ensure fully cached
+        if (needMediaInfoLib) {
+          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
+        }
+
+        await checkLimits({
+          MediaInfo,
+          getSize: () => file.size,
+          readChunk: readChunkBrowser(file),
+          limits: settings,
+          translations: helperPlugin.translations
+        })
+
+        // Copy FileList to original videofile input and dispatch-event change
+        videofile.files = clonedVideofile.files
+
+        dispatchChangeToOriginVideofile()
+      } catch (error) {
+        const { notifier } = peertubeHelpers
+
+        // Notify user with as toast as errors
+        error.message.split('\n').forEach(error => {
+          if (notifier !== undefined) {
+            notifier.error(error)
+          } else {
+            injectToast(createToast('error', {
+              title: helperPlugin.translations.toastTitleError,
+              content: error
+            }))
+          }
+        })
+
+        // Restore original label text and re-enable cloned video file
+        enableInputFile(clonedVideofile)
+      }
+    }
+  })
+}
+
+async function waitForRendering ({ outdatedBrowser, helperPlugin }) {
+  // Waiting for DOMContent updated with a timeout of 5 seconds
+  await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      clearInterval(interval)
+      reject(new Error('DOMContent cannot be loaded'))
+    }, 5000)
+
+    // Waiting for videofile input in DOM
+    const interval = setInterval(() => {
+      if (document.getElementById('videofile') !== null) {
+        clearTimeout(timeout)
+        clearInterval(interval)
+        resolve()
+      }
+    }, 10)
+  })
+
+  const videofile = document.getElementById('videofile')
+
+  // First rendering
+  if (helperPlugin) {
+    firstRendering({ outdatedBrowser, helperPlugin })
+  }
+
+  if (outdatedBrowser) {
+    // Disable videofile input without spinner
+    disableInputFile(videofile, false)
+    throw new Error('Your web browser is out of date')
+  }
+
+  // Clone and hide the videofile input to not dispatch-event default upload
+  const clonedVideofile = videofile.cloneNode(true)
+  clonedVideofile.setAttribute('id', 'cloned-videofile')
+  videofile.setAttribute('style', 'display:none')
+  videofile.setAttribute('disabled', true)
+  videofile.parentElement.appendChild(clonedVideofile)
+
+  return { videofile, clonedVideofile }
+}
+
+function firstRendering ({ outdatedBrowser, helperPlugin }) {
+  if (outdatedBrowser) {
+    injectAlert(createAlert('warning', 'Your web browser is out of date <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
+    return
+  }
+
+  // Re-run hookUploadInput once first tab is selected
+  if (typeof window.MutationObserver === 'function') {
+    const tab = document.querySelectorAll('.nav .nav-link')[0]
+
+    const observer = new MutationObserver(async mutations => {
+      for (const mutation of mutations) {
+        const { type, attributeName, target } = mutation
+
+        if ((type === 'attributes') && (attributeName === 'aria-selected')) {
+          const selected = target.getAttribute('aria-selected')
+
+          if (selected) {
+            const { videofile, clonedVideofile } = await waitForRendering({ outdatedBrowser })
+
+            hookUploadInput({
+              videofile,
+              clonedVideofile,
+              helperPlugin
+            })
+          }
+        }
+      }
+    })
+
+    observer.observe(tab, { attributes: true })
   }
 }
 
