@@ -12,6 +12,7 @@ const config = {
     publicPath: `${pluginPath}/client-scripts/`,
     path: path.resolve(__dirname, '.'),
     filename: 'dist/common-client-plugin.js',
+    chunkFilename: 'dist/[name].js',
     library: 'script',
     libraryTarget: 'var'
   },

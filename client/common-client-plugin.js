@@ -192,7 +192,7 @@ class HelperPlugin {
   }
 
   loadMarkedModule () {
-    return import('marked')
+    return import(/* webpackChunkName: "marked" */ 'marked')
       .then(module => module.default)
       .then(marked => {
         if (this.instructionsHTML === '') {
@@ -204,7 +204,7 @@ class HelperPlugin {
   }
 
   loadMediaInfoLib () {
-    return import('mediainfo.js')
+    return import(/* webpackChunkName: "mediainfo" */ 'mediainfo.js')
       .then(() => {
         if (MediaInfo === undefined) Promise.reject(new Error('Loading MediaInfoLib failed'))
       })

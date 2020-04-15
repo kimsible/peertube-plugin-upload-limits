@@ -13,11 +13,11 @@
       ]
     },
     {
-      "script": "dist/2.common-client-plugin.js",
+      "script": "dist/vendors~marked.js",
       "scopes": []
     },
     {
-      "script": "dist/1.common-client-plugin.js",
+      "script": "dist/vendors~mediainfo.js",
       "scopes": []
     }
   ],
