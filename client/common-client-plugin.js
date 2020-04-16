@@ -69,6 +69,13 @@ async function handler ({ path, peertubeHelpers }) {
         return {}
       }
 
+      // No support with multitabs (activated URL and Torrent imports)
+      const tabs = document.querySelectorAll('.video-add-tabset > .nav-tabs .nav-item')
+      if (tabs.length > 1) {
+        injectAlert(createAlert('warning', 'No video checking support with enabled URL or torrent import.'))
+        return { tabs }
+      }
+
       // Clone and hide the videofile input to not dispatch-event default upload
       const clonedVideofile = videofile.cloneNode(true)
       clonedVideofile.setAttribute('id', 'cloned-videofile')
@@ -87,7 +94,7 @@ async function handler ({ path, peertubeHelpers }) {
 
     const [
       { settings, needMarkedModule, needMediaInfoLib },
-      { videofile, clonedVideofile }
+      { videofile, clonedVideofile, tabs }
     ] = await Promise.all([waitForSettings(), waitForRendering()])
 
     if (needMarkedModule) {
@@ -100,7 +107,7 @@ async function handler ({ path, peertubeHelpers }) {
         })
     }
 
-    if (outdatedBrowser) return
+    if (outdatedBrowser || tabs.length > 1) return
 
     const dispatchChangeToOriginVideofile = () => {
       videofile.removeAttribute('disabled')
