@@ -11,7 +11,7 @@ async function register ({ registerHook, peertubeHelpers }) {
 }
 
 function init (peertubeHelpers) {
-  let outdatedBrowser, helperPlugin
+  let outdatedBrowser
 
   // Checking fetch and WebAssembly browser support
   if (!window.fetch || !(typeof window.WebAssembly === 'object' && typeof window.WebAssembly.instantiate === 'function')) {
@@ -19,14 +19,9 @@ function init (peertubeHelpers) {
   }
 
   // Instanciate HelperPlugin
-  if (!outdatedBrowser) {
-    helperPlugin = new HelperPlugin(peertubeHelpers)
-  }
+  const helperPlugin = new HelperPlugin(peertubeHelpers)
 
-  return [
-    outdatedBrowser,
-    helperPlugin
-  ]
+  return { outdatedBrowser, helperPlugin }
 }
 
 async function handler ({ path, peertubeHelpers }) {
@@ -36,19 +31,17 @@ async function handler ({ path, peertubeHelpers }) {
 
   try {
     // Init
-    const [outdatedBrowser, helperPlugin] = init(peertubeHelpers)
+    const { outdatedBrowser, helperPlugin } = init(peertubeHelpers)
 
     const waitForSettings = () => {
-      if (!outdatedBrowser) {
-        return helperPlugin.getSettings()
-          .then(({ needMarkedModule, needMediaInfoLib }) => {
-            helperPlugin.lazyLoadTranslations().catch(handleError)
-            if (needMarkedModule) helperPlugin.loadMarkedModule().catch(handleError)
-            if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
+      return helperPlugin.getSettings()
+        .then(({ needMarkedModule, needMediaInfoLib }) => {
+          helperPlugin.lazyLoadTranslations().catch(handleError)
+          if (needMarkedModule) helperPlugin.loadMarkedModule().catch(handleError)
+          if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
-            return helperPlugin
-          })
-      }
+          return helperPlugin
+        })
     }
 
     const waitForRendering = async () => {
@@ -72,10 +65,8 @@ async function handler ({ path, peertubeHelpers }) {
       const videofile = document.getElementById('videofile')
 
       if (outdatedBrowser) {
-        injectAlert(createAlert('warning', 'Your web browser is out of date <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
-        // Disable videofile input without spinner
-        disableInputFile(videofile, false)
-        throw new Error('Your web browser is out of date')
+        injectAlert(createAlert('warning', 'Your web browser is out of date, you can only benefit video checking server-side <a href="https://browser-update.org/update.html?force_outdated=true" target="_blank" class="action-button grey-button"><span class="button-label">Update browser</span></a>'))
+        return {}
       }
 
       // Clone and hide the videofile input to not dispatch-event default upload
@@ -108,6 +99,8 @@ async function handler ({ path, peertubeHelpers }) {
           injectAlert(createAlert('info', instructionsHTML))
         })
     }
+
+    if (outdatedBrowser) return
 
     const dispatchChangeToOriginVideofile = () => {
       videofile.removeAttribute('disabled')
