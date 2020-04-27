@@ -83,7 +83,7 @@ async function handler ({ path, peertubeHelpers }) {
       videofile.setAttribute('disabled', true)
       videofile.parentElement.appendChild(clonedVideofile)
 
-      return { videofile, clonedVideofile }
+      return { videofile, clonedVideofile, tabs }
     }
 
     // If entry-route is not /videos/upload lazy load all plugin
