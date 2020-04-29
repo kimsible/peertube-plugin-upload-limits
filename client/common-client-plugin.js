@@ -15,7 +15,7 @@ function init (peertubeHelpers) {
   let outdatedBrowser
 
   // Checking fetch and WebAssembly browser support
-  if (!window.fetch || !(typeof window.WebAssembly === 'object' && typeof window.WebAssembly.instantiate === 'function')) {
+  if (!window.fetch || !(typeof window.WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function')) {
     outdatedBrowser = true
   }
 
@@ -134,7 +134,7 @@ async function handler ({ path, peertubeHelpers }) {
         try {
           // Fetch mediainfo.wasm to ensure fully cached
           if (needMediaInfoLib) {
-            await window.fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
+            await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
           }
 
           await checkLimits({
