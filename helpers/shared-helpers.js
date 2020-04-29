@@ -12,7 +12,7 @@ async function checkLimits ({
     }
   }
 
-  if (limits.videoBitrate || limits.audioBitrate) {
+  if (MediaInfo !== undefined && (limits.videoBitrate || limits.audioBitrate)) {
     const mediainfo = await MediaInfo()
 
     const { media } = await mediainfo.analyzeData(getSize, readChunk)
