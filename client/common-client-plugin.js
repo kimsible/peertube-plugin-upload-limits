@@ -1,3 +1,4 @@
+import 'mediainfo.js'
 import { createAlert, createToast, injectToast, injectAlert, disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
@@ -38,7 +39,7 @@ async function handler ({ path, peertubeHelpers }) {
         .then(({ needMarkedModule, needMediaInfoLib }) => {
           helperPlugin.lazyLoadTranslations().catch(handleError)
           if (needMarkedModule) helperPlugin.loadMarkedModule().catch(handleError)
-          if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
+          // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
           return helperPlugin
         })
@@ -202,13 +203,13 @@ class HelperPlugin {
         return this.instructionsHTML
       })
   }
-
+  /*
   loadMediaInfoLib () {
-    return import(/* webpackChunkName: "mediainfo" */ 'mediainfo.js')
+    return import(/* webpackChunkName: "mediainfo" *//* 'mediainfo.js')
       .then(() => {
         if (MediaInfo === undefined) Promise.reject(new Error('Loading MediaInfoLib failed'))
       })
-  }
+  } */
 
   lazyLoadTranslations () {
     const promises = []
