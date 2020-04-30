@@ -36,9 +36,9 @@ async function handler ({ path, peertubeHelpers }) {
 
     const waitForSettings = () => {
       return helperPlugin.getSettings()
-        .then(({ needMarkedModule, needMediaInfoLib }) => {
+        .then(({ hasInstructions, needMediaInfoLib }) => {
           helperPlugin.lazyLoadTranslations().catch(handleError)
-          if (needMarkedModule) helperPlugin.loadMarkedModule().catch(handleError)
+          if (hasInstructions) helperPlugin.instructions.catch(handleError)
           // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
           return helperPlugin
@@ -94,13 +94,13 @@ async function handler ({ path, peertubeHelpers }) {
     }
 
     const [
-      { settings, needMarkedModule, needMediaInfoLib },
+      { settings, hasInstructions, needMediaInfoLib },
       { videofile, clonedVideofile, tabs }
     ] = await Promise.all([waitForSettings(), waitForRendering()])
 
-    if (needMarkedModule) {
+    if (hasInstructions) {
       // Make sure marked.js is cached and markdown parsed
-      helperPlugin.loadMarkedModule()
+      helperPlugin.instructions
         .catch(handleError)
         .then(instructionsHTML => {
           // Display instructions
@@ -172,15 +172,38 @@ class HelperPlugin {
     this.translations = {}
     this.instructionsHTML = ''
     this.needMediaInfoLib = false
-    this.needMarkedModule = false
+    this.hasInstructions = false
   }
 
   async getSettings () {
     this.settings = await this.peertubeHelpers.getSettings()
     this.needMediaInfoLib = this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined
-    this.needMarkedModule = this.settings.instructions && true
+    this.hasInstructions = this.settings.instructions && true
 
     return this
+  }
+
+  get instructions () {
+    if (this.instructionsHTML.length > 0) {
+      return Promise.resolve(this.instructionsHTML)
+    }
+
+    const { markdownRenderer } = this.peertubeHelpers
+
+    if (typeof markdownRenderer !== 'undefined') {
+      return markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
+        .then(html => {
+          this.instructionsHTML = html
+          return this.instructionsHTML
+        })
+    }
+
+    return import(/* webpackChunkName: "marked" */ 'marked')
+      .then(module => module.default)
+      .then(marked => {
+        this.instructionsHTML = marked(this.settings.instructions, { breaks: true })
+        return this.instructionsHTML
+      })
   }
 
   getTranslation (limit) {
@@ -192,17 +215,6 @@ class HelperPlugin {
       })
   }
 
-  loadMarkedModule () {
-    return import(/* webpackChunkName: "marked" */ 'marked')
-      .then(module => module.default)
-      .then(marked => {
-        if (this.instructionsHTML === '') {
-          this.instructionsHTML = marked(this.settings.instructions, { breaks: true })
-        }
-
-        return this.instructionsHTML
-      })
-  }
   /*
   loadMediaInfoLib () {
     return import(/* webpackChunkName: "mediainfo" *//* 'mediainfo.js')
