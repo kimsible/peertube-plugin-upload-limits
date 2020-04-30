@@ -103,8 +103,19 @@ async function handler ({ path, peertubeHelpers }) {
       helperPlugin.instructions
         .catch(handleError)
         .then(instructionsHTML => {
-          // Display instructions
-          injectAlert(createAlert('info', instructionsHTML))
+          const { showModal } = peertubeHelpers
+
+          if (showModal !== undefined) {
+            showModal({
+              title: 'Instructions',
+              content: instructionsHTML,
+              confirm: {
+                value: 'OK'
+              }
+            })
+          } else {
+            injectAlert(createAlert('info', instructionsHTML))
+          }
         })
     }
 
