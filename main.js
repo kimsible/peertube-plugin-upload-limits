@@ -3,11 +3,11 @@ const { promises: { open } } = require('fs')
 const { checkLimits } = require('./helpers/shared-helpers.js')
 const { readChunkNode } = require('./helpers/server-helpers.js')
 
-async function register ({ registerSetting, settingsManager, registerHook }) {
+async function register ({ registerSetting, settingsManager, registerHook, getRouter }) {
   registerSetting({
     name: 'instructions',
     label: 'Instructions',
-    type: 'input-textarea',
+    type: getRouter !== undefined ? 'markdown-enhanced' : 'input-textarea', // use markdown-enhanced only if implemented
     private: false
   })
 
