@@ -1,5 +1,6 @@
 const MediaInfo = require('mediainfo.js')
-const { promises: { open } } = require('fs')
+const { promises: { open, readFile } } = require('fs')
+const { resolve } = require('path')
 const { checkLimits } = require('./helpers/shared-helpers.js')
 const { readChunkNode } = require('./helpers/server-helpers.js')
 
@@ -34,11 +35,25 @@ async function register ({ registerSetting, settingsManager, registerHook, getRo
 
   registerHook({
     target: 'filter:api.video.upload.accept.result',
-    handler: ({ accepted }, { videoFile }) => handler({ accepted, videoFile, settingsManager })
+    handler: ({ accepted }, { videoFile }) => handler({ accepted, videoFilePath: videoFile.path, videoFileSize: videoFile.size, settingsManager })
   })
+
+  const { version: serverVersion } = JSON.parse(await readFile(resolve(process.cwd(), './package.json')))
+
+  if (parseFloat(serverVersion.substr(0, 3)) >= 2.2) {
+    registerHook({
+      target: 'filter:api.video.post-import-url.accept.result',
+      handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
+    })
+
+    registerHook({
+      target: 'filter:api.video.post-import-torrent.accept.result',
+      handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
+    })
+  }
 }
 
-async function handler ({ accepted, videoFile, settingsManager }) {
+async function handler ({ accepted, videoFilePath, videoFileSize, settingsManager }) {
   if (!accepted) {
     console.log('[Plugin Upload Limits]', 'NOT-ACCEPTED', 'by PeerTube itself')
     return {
@@ -61,11 +76,11 @@ async function handler ({ accepted, videoFile, settingsManager }) {
       }
     }
 
-    const fileHandle = await open(videoFile.path)
+    const fileHandle = await open(videoFilePath)
 
     await checkLimits({
       MediaInfo,
-      getSize: () => videoFile.size,
+      getSize: () => videoFileSize,
       readChunk: readChunkNode(fileHandle),
       limits: {
         fileSize,
