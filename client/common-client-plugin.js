@@ -166,7 +166,7 @@ async function waitForRendering (helperPlugin) {
 
   // First rendering
   if (helperPlugin) {
-    createTabObserver(helperPlugin)
+    createComponentObserver(helperPlugin)
   }
 
   // Clone and hide the videofile input to not dispatch-event default upload
@@ -179,18 +179,17 @@ async function waitForRendering (helperPlugin) {
   return { videofile, clonedVideofile }
 }
 
-function createTabObserver (helperPlugin) {
-  const tab = document.querySelectorAll('.nav .nav-link')[0]
+function createComponentObserver (helperPlugin) {
+  const component = document.querySelector('my-videos-add')
 
   const observer = new MutationObserver(async mutations => {
     for (const mutation of mutations) {
-      const { type, attributeName, target } = mutation
+      const { type, addedNodes } = mutation
 
-      // Re-run hookUploadInput once first tab is selected
-      if ((type === 'attributes') && (attributeName === 'aria-selected')) {
-        const selected = target.getAttribute('aria-selected')
-
-        if (selected) {
+      // Re-run hookUploadInput if my-video-upload component is re-loaded
+      const node = addedNodes[0]
+      if (type === 'childList' && node instanceof HTMLElement) {
+        if (/my-video-upload/i.test(node.parentElement.tagName) && /upload-video-container/.test(node.classList.value)) {
           const { videofile, clonedVideofile } = await waitForRendering()
 
           hookUploadInput({
@@ -203,7 +202,7 @@ function createTabObserver (helperPlugin) {
     }
   })
 
-  observer.observe(tab, { attributes: true })
+  observer.observe(component, { childList: true, subtree: true })
 }
 
 class HelperPlugin {

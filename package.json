@@ -81,7 +81,8 @@
       "fetch",
       "WebAssembly",
       "Event",
-      "MutationObserver"
+      "MutationObserver",
+      "HTMLElement"
     ]
   }
 }
