@@ -161,9 +161,15 @@ async function handler ({ path, peertubeHelpers }) {
 
           dispatchChangeToOriginVideofile()
         } catch (error) {
+          const { notifier } = peertubeHelpers
+
           // Notify user with as toast as errors
           error.message.split('\n').forEach(error => {
-            injectToast(createToast('error', { title: helperPlugin.translations.toastTitleError, content: error }))
+            if (notifier !== undefined) {
+              notifier.error(error)
+            } else {
+              injectToast(createToast('error', { title: helperPlugin.translations.toastTitleError, content: error }))
+            }
           })
 
           // Restore original label text and re-enable cloned video file
