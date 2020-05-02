@@ -38,7 +38,7 @@ async function handler ({ path, peertubeHelpers }) {
       return helperPlugin.getSettings()
         .then(({ hasInstructions, needMediaInfoLib }) => {
           helperPlugin.lazyLoadTranslations().catch(handleError)
-          if (hasInstructions) helperPlugin.instructions.catch(handleError)
+          if (hasInstructions) helperPlugin.instructions().catch(handleError)
           // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
           return helperPlugin
@@ -99,22 +99,22 @@ async function handler ({ path, peertubeHelpers }) {
     ] = await Promise.all([waitForSettings(), waitForRendering()])
 
     if (hasInstructions) {
-      // Make sure marked.js is cached and markdown parsed
-      helperPlugin.instructions
+      // Make sure instructions are cached
+      helperPlugin.instructions()
         .catch(handleError)
-        .then(instructionsHTML => {
+        .then(({ title, content }) => {
           const { showModal } = peertubeHelpers
 
           if (showModal !== undefined) {
             showModal({
-              title: 'Instructions',
-              content: instructionsHTML,
+              title,
+              content,
               confirm: {
                 value: 'OK'
               }
             })
           } else {
-            injectAlert(createAlert('info', instructionsHTML))
+            injectAlert(createAlert('info', `<h5><strong>${title}</strong></h5>${content}`))
           }
         })
     }
@@ -200,27 +200,23 @@ class HelperPlugin {
     return this
   }
 
-  get instructions () {
-    if (this.instructionsHTML.length > 0) {
-      return Promise.resolve(this.instructionsHTML)
-    }
+  async instructions () {
+    if (this.instructionsHTML.length === 0) {
+      const { markdownRenderer } = this.peertubeHelpers
 
-    const { markdownRenderer } = this.peertubeHelpers
-
-    if (typeof markdownRenderer !== 'undefined') {
-      return markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
-        .then(html => {
-          this.instructionsHTML = html
-          return this.instructionsHTML
-        })
-    }
-
-    return import(/* webpackChunkName: "marked" */ 'marked')
-      .then(module => module.default)
-      .then(marked => {
+      if (typeof markdownRenderer !== 'undefined') {
+        const html = await markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
+        this.instructionsHTML = html
+      } else {
+        const marked = await import(/* webpackChunkName: "marked" */ 'marked').then(module => module.default)
         this.instructionsHTML = marked(this.settings.instructions, { breaks: true })
-        return this.instructionsHTML
-      })
+      }
+    }
+
+    return {
+      title: this.translations.instructionsTitle || 'Upload instructions',
+      content: this.instructionsHTML
+    }
   }
 
   getTranslation (limit) {
@@ -257,6 +253,12 @@ class HelperPlugin {
 
     if (this.settings.fileSize !== undefined || this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined) {
       promises.push(this.getTranslation('toastTitle'))
+    }
+
+    if (this.settings.instructions !== undefined) {
+      promises.push(this.peertubeHelpers.translate('upload-limits-client-instructionsTitle').then(title => {
+        this.translations.instructionsTitle = title
+      }))
     }
 
     return Promise.all(promises)
