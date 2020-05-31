@@ -14,15 +14,26 @@ This plugin adds an instructions alert above the upload form and upload limits (
 
 ### URL and Torrent import
 
-Unfortunately, no limits for import with URL or torrent for the moment.
+Limits for import with URL or torrent are now supported with at least PeerTube v2.2.
 
 ### Dependencies
 
 - Upload limits are checked both client and server side with [the JavaScript port of MediaInfo](https://mediainfo.js.org/) using [WebAssembly](https://webassembly.org/).
 
-- Instructions are parsed and outputted in HTML only client side with [Marked.js](https://marked.js.org).
+- Instructions are parsed and outputted in HTML only client side with [PeerTube markdownRender plugin helper](https://github.com/Chocobozzz/PeerTube/blob/release/2.2.0/support/doc/plugins/guide.md#markdown-renderer) from PeerTube v2.2 otherwhise with [Marked.js](https://marked.js.org).
 
 ### Screenshots
+
+From PeerTube v2.2
+
+<div style=text-align:center>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert-v2.2.png>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin-v2.2.png>
+  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-import-rejected-v2.2.png>
+</div>
+
+
+With PeerTube v2.1
 
 <div style=text-align:center>
   <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert.png>
