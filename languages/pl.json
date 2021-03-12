@@ -1,0 +1,7 @@
+{
+  "upload-limits-client-fileSize-error": "Rozmiar pliku przekracza maksymalny dozwolony:",
+  "upload-limits-client-videoBitrate-error": "Szybkość transmisji wideo przekracza maksymalną dozwoloną:",
+  "upload-limits-client-audioBitrate-error": "Szybkość transmisji audio przekracza maksymalną dozwoloną:",
+  "upload-limits-client-toastTitle-error": "Błąd",
+  "upload-limits-client-instructionsTitle": "Instrukcje wysyłania"
+}
