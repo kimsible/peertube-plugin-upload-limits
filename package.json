@@ -27,7 +27,6 @@
     "dotenv": "^10.0.0",
     "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
-    "script-loader": "^0.7.2",
     "standard": "^16.0.3",
     "string-replace-loader": "^2.3.0",
     "webpack": "^5.51.1",
@@ -43,8 +42,8 @@
   ],
   "library": "./main.js",
   "scripts": {
-    "dev": "webpack --env.dev",
-    "build": "webpack --env.prod"
+    "dev": "webpack --env dev",
+    "build": "webpack --env prod"
   },
   "staticDirs": {
     "wasm": "./assets/wasm"
@@ -75,7 +74,6 @@
   },
   "standard": {
     "globals": [
-      "MediaInfo",
       "fetch",
       "WebAssembly",
       "Event",
