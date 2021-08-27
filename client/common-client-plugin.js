@@ -1,4 +1,5 @@
-import 'mediainfo.js'
+import MediaInfo from 'mediainfo.js'
+
 import { createAlert, createToast, injectToast, injectAlert, disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
