@@ -15,10 +15,6 @@
     {
       "script": "dist/mediainfo.js",
       "scopes": []
-    },
-    {
-      "script": "dist/vendors~marked.js",
-      "scopes": []
     }
   ],
   "css": [
@@ -37,7 +33,7 @@
     "webpack-cli": "^4.8.0"
   },
   "engine": {
-    "peertube": ">=2.1.1"
+    "peertube": ">=2.2.0"
   },
   "homepage": "https://github.com/kimsible/peertube-plugin-upload-limits",
   "keywords": [
@@ -58,7 +54,6 @@
     "pl-PL": "./languages/pl.json"
   },
   "dependencies": {
-    "marked": "^0.8.2",
     "mediainfo.js": "^0.1.5"
   },
   "ava": {

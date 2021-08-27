@@ -1,4 +1,4 @@
-import { createAlert, createToast, injectToast, injectAlert, disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
+import { disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
 async function register ({ registerHook, peertubeHelpers }) {
@@ -43,17 +43,13 @@ async function handler (helperPlugin) {
         .then(({ title, content }) => {
           const { showModal } = helperPlugin.peertubeHelpers
 
-          if (showModal !== undefined) {
-            showModal({
-              title,
-              content,
-              confirm: {
-                value: 'OK'
-              }
-            })
-          } else {
-            injectAlert(createAlert('info', `<h5><strong>${title}</strong></h5>${content}`))
-          }
+          showModal({
+            title,
+            content,
+            confirm: {
+              value: 'OK'
+            }
+          })
         })
     }
 
@@ -125,14 +121,7 @@ function hookUploadInput ({
 
         // Notify user with as toast as errors
         error.message.split('\n').forEach(error => {
-          if (notifier !== undefined) {
-            notifier.error(error)
-          } else {
-            injectToast(createToast('error', {
-              title: helperPlugin.translations.toastTitleError,
-              content: error
-            }))
-          }
+          notifier.error(error)
         })
 
         // Restore original label text and re-enable cloned video file
@@ -239,14 +228,8 @@ class HelperPlugin {
   async instructions () {
     if (this.instructionsHTML.length === 0) {
       const { markdownRenderer } = this.peertubeHelpers
-
-      if (typeof markdownRenderer !== 'undefined') {
-        const html = await markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
-        this.instructionsHTML = html
-      } else {
-        const marked = await import(/* webpackChunkName: "marked" */ 'marked').then(module => module.default)
-        this.instructionsHTML = marked(this.settings.instructions, { breaks: true })
-      }
+      const html = await markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
+      this.instructionsHTML = html
     }
 
     return {
