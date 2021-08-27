@@ -1,6 +1,6 @@
 # PeerTube plugin Upload Limits
 
-This plugin adds an instructions alert above the upload form and upload limits (file size, video bit rate, audio bit rate) for a media input. All these are editable in plugin settings :
+This plugin adds an instruction modal and limitations (file size, video bit rate, audio bit rate) for the file to upload. All these options are editable in plugin settings:
 
 - **Instructions** formated in markdown
 - **Maximum file size** in Mega octets / Mega bytes
@@ -12,38 +12,28 @@ This plugin adds an instructions alert above the upload form and upload limits (
 - On client side, when limits are not fullfilled, the upload is not proceed and the user is notified with a PeerTube toast.
 - On server side after uploading, when limits are not fullfilled, uploaded video / audio file is not accepted. See the server side checking as a **security validation**.
 
-### URL and Torrent import
+### Requirements
 
-Limits for import with URL or torrent are now supported with at least PeerTube v2.2.
+From Upload Limits v0.4.0, **PeerTube v2.2.0 or a newer version** is required.
 
 ### Dependencies
 
-- Upload limits are checked both client and server side with [the JavaScript port of MediaInfo](https://mediainfo.js.org/) using [WebAssembly](https://webassembly.org/).
+- Upload limits are checked both client and server side with [the JavaScript port of MediaInfo](https://mediainfo.js.org) using [WebAssembly](https://webassembly.org).
 
-- Instructions are parsed and outputted in HTML only client side with [PeerTube markdownRender plugin helper](https://github.com/Chocobozzz/PeerTube/blob/release/2.2.0/support/doc/plugins/guide.md#markdown-renderer) from PeerTube v2.2 otherwhise with [Marked.js](https://marked.js.org).
+- Instructions are parsed and outputted in HTML only client side with [PeerTube markdownRender plugin helper](https://github.com/Chocobozzz/PeerTube/blob/master/support/doc/plugins/guide.md#markdown-renderer).
 
 ### Screenshots
 
-From PeerTube v2.2
+<div style="display:flex;justify-content:space-evenly;align-items:center">
+  <img style=max-width:230px src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-settings.png>
 
-<div style=text-align:center>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert-v2.2.png>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin-v2.2.png>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-import-rejected-v2.2.png>
+  <p style=max-width:280px>
+    <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert-v2.2.png>
+    <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast-video-bitrate.png>
+    <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast-audio-bitrate.png>
+  </p>
 </div>
 
-
-With PeerTube v2.1
-
-<div style=text-align:center>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-alert.png>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-toast.png>
-</div>
-
-<div style=text-align:center>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-spinner.png>
-  <img src=https://raw.githubusercontent.com/kimsible/peertube-plugin-upload-limits/master/screenshots/sample-admin.png>
-</div>
 
 ### Development
 
@@ -66,7 +56,7 @@ $ git remote add me git@github.com:GITHUB_USER/peertube-plugin-upload-limits.git
 In your local PeerTube :
 
 ```bash
-$ nvm use 10                    # Make sure you're using Node.js 10
+$ nvm use 12                    # Make sure you're using Node.js 12
 $ yarn install --pure-lockfile  # Install PeerTube dependencies
 $ npm run dev                   # Run PeerTube dev client & server
 $ npm run plugin:install -- \
@@ -82,7 +72,7 @@ PEERTUBE_PATH=/path/to/local/PeerTube
 At last, you can run :
 
 ```bash
-$ nvm use 10   # Make sure you're using Node.js 10
+$ nvm use 12   # Make sure you're using Node.js 12
 $ npm install  # Install plugin dependencies
 $ npm run dev  # Run watcher
 ```
