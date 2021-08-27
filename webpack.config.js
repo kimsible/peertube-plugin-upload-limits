@@ -56,8 +56,8 @@ module.exports = async env => {
             {
               loader: 'string-replace-loader',
               options: {
-                search: 'mediainfo.wasm',
-                replace: `${publicPluginPath}/static/wasm/mediainfo.wasm`
+                search: 'MediaInfoModule.wasm',
+                replace: `${publicPluginPath}/static/wasm/MediaInfoModule.wasm`
               }
             }
           ]
@@ -67,8 +67,8 @@ module.exports = async env => {
     plugins: [
       new EsmWebpackPlugin(),
       new CopyWebpackPlugin([{
-        from: './node_modules/mediainfo.js/dist/mediainfo.wasm',
-        to: './assets/wasm/mediainfo.wasm'
+        from: './node_modules/mediainfo.js/dist/MediaInfoModule.wasm',
+        to: './assets/wasm/MediaInfoModule.wasm'
       }])
     ]
   }

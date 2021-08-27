@@ -4,24 +4,29 @@ import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
 async function register ({ registerHook, peertubeHelpers }) {
   if (peertubeHelpers.isLoggedIn()) {
+    // Lazy load plugin settings
+    const helperPlugin = new HelperPlugin(peertubeHelpers)
+    await waitForSettings(helperPlugin)
+
+    // Run when route is /videos/upload
     registerHook({
       target: 'action:router.navigation-end',
-      handler: ({ path }) => handler({ path, peertubeHelpers })
+      handler: ({ path }) => {
+        if (path === '/videos/upload') {
+          handler(helperPlugin)
+        }
+      }
     })
+
+    // Run when refresh or manually enter /videos/upload route in browser
+    if (window.location.pathname === '/videos/upload') {
+      handler(helperPlugin)
+    }
   }
 }
 
-async function handler ({ path, peertubeHelpers }) {
+async function handler (helperPlugin) {
   try {
-    // Init
-    const helperPlugin = new HelperPlugin(peertubeHelpers)
-
-    // If entry-route is not /videos/upload lazy load all plugin
-    if (path !== '/videos/upload') {
-      await waitForSettings(helperPlugin)
-      return
-    }
-
     const [
       { hasInstructions },
       { videofile, clonedVideofile }
@@ -35,7 +40,7 @@ async function handler ({ path, peertubeHelpers }) {
       helperPlugin.instructions()
         .catch(handleError)
         .then(({ title, content }) => {
-          const { showModal } = peertubeHelpers
+          const { showModal } = helperPlugin.peertubeHelpers
 
           if (showModal !== undefined) {
             showModal({
@@ -90,9 +95,9 @@ function hookUploadInput ({
       disableInputFile(clonedVideofile)
 
       try {
-        // Fetch mediainfo.wasm to ensure fully cached
+        // Fetch MediaInfoModule.wasm to ensure fully cached
         if (needMediaInfoLib) {
-          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/mediainfo.wasm`)
+          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/MediaInfoModule.wasm`)
         }
 
         await checkLimits({

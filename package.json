@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "marked": "^0.8.2",
-    "mediainfo.js": "0.0.3"
+    "mediainfo.js": "^0.1.5"
   },
   "ava": {
     "require": [
