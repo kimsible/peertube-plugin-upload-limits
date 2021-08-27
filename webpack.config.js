@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const dotenv = require('dotenv')
 
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 
 const { version } = require('./package.json')
 const publicPluginPath = `/plugins/upload-limits/${version}`
@@ -68,10 +68,11 @@ module.exports = async env => {
       ]
     },
     plugins: [
-      new CopyWebpackPlugin([{
-        from: './node_modules/mediainfo.js/dist/MediaInfoModule.wasm',
-        to: './assets/wasm/MediaInfoModule.wasm'
-      }])
+      new CopyPlugin({
+        patterns: [
+          { from: './node_modules/mediainfo.js/dist/MediaInfoModule.wasm', to: './assets/wasm/MediaInfoModule.wasm' }
+        ]
+      })
     ],
     experiments: {
       outputModule: true
