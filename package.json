@@ -45,7 +45,6 @@
   "library": "./main.js",
   "scripts": {
     "dev": "webpack --env.dev",
-    "prepare": "npm run build",
     "build": "webpack --env.prod"
   },
   "staticDirs": {
