@@ -1,5 +1,3 @@
-import MediaInfo from 'mediainfo.js'
-
 import { createAlert, createToast, injectToast, injectAlert, disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
@@ -81,7 +79,12 @@ function hookUploadInput ({
     const file = clonedVideofile.files[0]
 
     if (file) {
-      const { settings, needMediaInfoLib, peertubeHelpers } = helperPlugin
+      const {
+        settings,
+        needMediaInfoLib,
+        peertubeHelpers,
+        loadMediaInfoLib
+      } = helperPlugin
 
       const { fileSize } = settings
       if (!fileSize && !needMediaInfoLib) {
@@ -96,8 +99,10 @@ function hookUploadInput ({
       disableInputFile(clonedVideofile)
 
       try {
-        // Fetch MediaInfoModule.wasm to ensure fully cached
+        // Load MediaInfo.js lib and fetch MediaInfoModule.wasm to ensure fully cached
+        let MediaInfo
         if (needMediaInfoLib) {
+          MediaInfo = await loadMediaInfoLib()
           await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/MediaInfoModule.wasm`)
         }
 
@@ -144,7 +149,7 @@ function waitForSettings (helperPlugin) {
     .then(({ hasInstructions, needMediaInfoLib }) => {
       helperPlugin.lazyLoadTranslations().catch(handleError)
       if (hasInstructions) helperPlugin.instructions().catch(handleError)
-      // if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
+      if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
       return helperPlugin
     })
@@ -257,13 +262,9 @@ class HelperPlugin {
       })
   }
 
-  /*
   loadMediaInfoLib () {
-    return import(/* webpackChunkName: "mediainfo" *//* 'mediainfo.js')
-      .then(() => {
-        if (MediaInfo === undefined) Promise.reject(new Error('Loading MediaInfoLib failed'))
-      })
-  } */
+    return import(/* webpackChunkName: "mediainfo" */ 'mediainfo.js').then(module => module.default)
+  }
 
   lazyLoadTranslations () {
     const promises = []

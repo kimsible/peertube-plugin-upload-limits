@@ -13,6 +13,10 @@
       ]
     },
     {
+      "script": "dist/mediainfo.js",
+      "scopes": []
+    },
+    {
       "script": "dist/vendors~marked.js",
       "scopes": []
     }
