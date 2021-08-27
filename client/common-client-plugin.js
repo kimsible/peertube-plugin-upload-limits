@@ -3,9 +3,11 @@ import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
 async function register ({ registerHook, peertubeHelpers }) {
   if (peertubeHelpers.isLoggedIn()) {
-    // Lazy load plugin settings
+    // Init plugin helper
     const helperPlugin = new HelperPlugin(peertubeHelpers)
-    await waitForSettings(helperPlugin)
+
+    // Pre-load plugin settings
+    await loadSettings(helperPlugin)
 
     // Run when route is /videos/upload
     registerHook({
@@ -30,8 +32,8 @@ async function handler (helperPlugin) {
       { hasInstructions },
       { videofile, clonedVideofile }
     ] = await Promise.all([
-      waitForSettings(helperPlugin),
-      waitForRendering(helperPlugin)
+      loadSettings(helperPlugin),
+      videofileRendering(helperPlugin)
     ])
 
     if (hasInstructions) {
@@ -144,7 +146,7 @@ function handleError (error) {
   console.error(error)
 }
 
-function waitForSettings (helperPlugin) {
+function loadSettings (helperPlugin) {
   return helperPlugin.getSettings()
     .then(({ hasInstructions, needMediaInfoLib }) => {
       helperPlugin.lazyLoadTranslations().catch(handleError)
@@ -155,7 +157,7 @@ function waitForSettings (helperPlugin) {
     })
 }
 
-async function waitForRendering (helperPlugin) {
+async function videofileRendering (helperPlugin) {
   // Waiting for DOMContent updated with a timeout of 5 seconds
   await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -201,7 +203,7 @@ function createComponentObserver (helperPlugin) {
       const node = addedNodes[0]
       if (type === 'childList' && node instanceof HTMLElement) {
         if (/my-video-upload/i.test(node.parentElement.tagName) && /upload-video-container/.test(node.classList.value)) {
-          const { videofile, clonedVideofile } = await waitForRendering()
+          const { videofile, clonedVideofile } = await videofileRendering()
 
           hookUploadInput({
             videofile,
