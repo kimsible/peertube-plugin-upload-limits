@@ -1,11 +1,10 @@
 const path = require('path')
 const fs = require('fs')
 const dotenv = require('dotenv')
-
 const CopyPlugin = require('copy-webpack-plugin')
+const pkg = require('./package.json')
 
-const { version } = require('./package.json')
-const publicPluginPath = `/plugins/upload-limits/${version}`
+const PUBLIC_PATH = `/plugins/${pkg.name.replace('peertube-plugin-', '')}/${pkg.version}/static/`
 
 module.exports = async env => {
   let mode, output, watch
@@ -14,7 +13,7 @@ module.exports = async env => {
     mode = 'production'
 
     output = {
-      path: path.resolve(__dirname, '.')
+      path: path.resolve(__dirname, 'dist')
     }
   }
 
@@ -28,7 +27,7 @@ module.exports = async env => {
     await fs.promises.access(PEERTUBE_PATH, fs.constants.R_OK | fs.constants.W_OK)
 
     output = {
-      path: path.resolve(PEERTUBE_PATH, './storage/plugins/node_modules/peertube-plugin-upload-limits')
+      path: path.resolve(PEERTUBE_PATH, `./storage/plugins/node_modules/${pkg.name}`)
     }
 
     watch = true
@@ -40,9 +39,9 @@ module.exports = async env => {
     entry: './client/common-client-plugin.js',
     output: {
       ...output,
-      publicPath: `${publicPluginPath}/client-scripts/`,
-      filename: 'dist/common-client-plugin.js',
-      chunkFilename: 'dist/[name].js',
+      publicPath: PUBLIC_PATH,
+      filename: 'common-client-plugin.js',
+      chunkFilename: 'assets/[name].js',
       library: {
         type: 'module'
       }
@@ -50,7 +49,7 @@ module.exports = async env => {
     module: {
       rules: [
         {
-          test: /mediainfo.*\.js$/,
+          test: /mediainfo\.js$/,
           parser: {
             commonjs: false,
             node: false
@@ -60,7 +59,7 @@ module.exports = async env => {
               loader: 'string-replace-loader',
               options: {
                 search: 'MediaInfoModule.wasm',
-                replace: `${publicPluginPath}/static/wasm/MediaInfoModule.wasm`
+                replace: path.resolve(PUBLIC_PATH, 'assets/MediaInfoModule.wasm')
               }
             }
           ]
@@ -70,7 +69,7 @@ module.exports = async env => {
     plugins: [
       new CopyPlugin({
         patterns: [
-          { from: './node_modules/mediainfo.js/dist/MediaInfoModule.wasm', to: './assets/wasm/MediaInfoModule.wasm' }
+          { from: './node_modules/mediainfo.js/dist/MediaInfoModule.wasm', to: 'assets/MediaInfoModule.wasm' }
         ]
       })
     ],

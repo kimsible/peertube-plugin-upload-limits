@@ -101,7 +101,7 @@ function hookUploadInput ({
         let MediaInfo
         if (needMediaInfoLib) {
           MediaInfo = await loadMediaInfoLib()
-          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/wasm/MediaInfoModule.wasm`)
+          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`)
         }
 
         await checkLimits({
