@@ -1,17 +1,9 @@
-const MediaInfo = require('mediainfo.js')
-const { promises: { open, readFile } } = require('fs')
-const { resolve } = require('path')
+const MediaInfoFactory = require('mediainfo.js')
+const { promises: { open } } = require('fs')
 const { checkLimits } = require('./helpers/shared-helpers.js')
 const { readChunkNode } = require('./helpers/server-helpers.js')
 
-async function register ({ registerSetting, settingsManager, registerHook, getRouter }) {
-  registerSetting({
-    name: 'instructions',
-    label: 'Instructions',
-    type: getRouter !== undefined ? 'markdown-enhanced' : 'input-textarea', // use markdown-enhanced only if implemented
-    private: false
-  })
-
+async function register ({ registerSetting, settingsManager, registerHook }) {
   registerSetting({
     name: 'fileSize',
     label: 'Maximum file size (Mo)',
@@ -33,24 +25,27 @@ async function register ({ registerSetting, settingsManager, registerHook, getRo
     private: false
   })
 
+  registerSetting({
+    name: 'instructions',
+    label: 'Instructions - DEPRECATED, please now use upload-instructions plugin',
+    type: 'markdown-enhanced',
+    private: false
+  })
+
   registerHook({
     target: 'filter:api.video.upload.accept.result',
     handler: ({ accepted }, { videoFile }) => handler({ accepted, videoFilePath: videoFile.path, videoFileSize: videoFile.size, settingsManager })
   })
 
-  const { version: serverVersion } = JSON.parse(await readFile(resolve(process.cwd(), './package.json')))
+  registerHook({
+    target: 'filter:api.video.post-import-url.accept.result',
+    handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
+  })
 
-  if (parseFloat(serverVersion.substr(0, 3)) >= 2.2) {
-    registerHook({
-      target: 'filter:api.video.post-import-url.accept.result',
-      handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
-    })
-
-    registerHook({
-      target: 'filter:api.video.post-import-torrent.accept.result',
-      handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
-    })
-  }
+  registerHook({
+    target: 'filter:api.video.post-import-torrent.accept.result',
+    handler: ({ accepted }, { videoFilePath, videoFile }) => handler({ accepted, videoFilePath, videoFileSize: videoFile.size, settingsManager })
+  })
 }
 
 async function handler ({ accepted, videoFilePath, videoFileSize, settingsManager }) {
@@ -79,7 +74,7 @@ async function handler ({ accepted, videoFilePath, videoFileSize, settingsManage
     const fileHandle = await open(videoFilePath)
 
     await checkLimits({
-      MediaInfo,
+      MediaInfoFactory,
       getSize: () => videoFileSize,
       readChunk: readChunkNode(fileHandle),
       limits: {
