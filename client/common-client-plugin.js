@@ -10,8 +10,8 @@ async function register ({ registerHook, peertubeHelpers }) {
     // Init plugin helper
     const helperPlugin = new HelperPlugin(peertubeHelpers)
 
-    // Pre-load plugin settings
-    await loadSettings(helperPlugin)
+    // Pre-load plugin settings and libraries
+    helperPlugin.lazyLoad()
 
     // Run when route is /videos/upload
     registerHook({
@@ -32,26 +32,17 @@ async function register ({ registerHook, peertubeHelpers }) {
 
 async function handler (helperPlugin) {
   try {
-    const [ {}, { videofile, clonedVideofile }] = await Promise.all([
-      loadSettings(helperPlugin),
-      videofileRendering(helperPlugin)
-    ])
-
-    hookUploadInput({
-      videofile,
-      clonedVideofile,
-      helperPlugin
-    })
+    hookUploadInput(helperPlugin, await videofileRendering(helperPlugin))
   } catch (error) {
     handleError(error)
   }
 }
 
-function hookUploadInput ({
-  videofile,
-  clonedVideofile,
-  helperPlugin
-}) {
+function handleError (error) {
+  console.error(error)
+}
+
+function hookUploadInput (helperPlugin, { videofile, clonedVideofile}) {
   const dispatchChangeToOriginVideofile = () => {
     videofile.removeAttribute('disabled')
     videofile.dispatchEvent(new Event('change'))
@@ -87,7 +78,6 @@ function hookUploadInput ({
           readChunk: readChunkBrowser(file),
           limits: settings,
           locateFile: () => `${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`,
-          translations: helperPlugin.translations
         })
 
         // Copy FileList to original videofile input and dispatch-event change
@@ -95,11 +85,12 @@ function hookUploadInput ({
 
         dispatchChangeToOriginVideofile()
       } catch (error) {
-        const { notifier } = peertubeHelpers
+        const { notifier, translate } = peertubeHelpers
 
         // Notify user with as toast as errors
-        error.message.split('\n').forEach(error => {
-          notifier.error(error)
+        error.message.split('\n').forEach(async error => {
+          const [message, data] = error.split(':')
+          notifier.error(await translate(message + ':') + data)
         })
 
         // Restore original label text and re-enable cloned video file
@@ -107,20 +98,6 @@ function hookUploadInput ({
       }
     }
   })
-}
-
-function handleError (error) {
-  console.error(error)
-}
-
-function loadSettings (helperPlugin) {
-  return helperPlugin.getSettings()
-    .then(({ needMediaInfoLib }) => {
-      helperPlugin.lazyLoadTranslations().catch(handleError)
-      if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
-
-      return helperPlugin
-    })
 }
 
 async function videofileRendering (helperPlugin) {
@@ -169,13 +146,7 @@ function createComponentObserver (helperPlugin) {
       const node = addedNodes[0]
       if (type === 'childList' && node instanceof HTMLElement) {
         if (/my-video-upload/i.test(node.parentElement.tagName) && /upload-video-container/.test(node.classList.value)) {
-          const { videofile, clonedVideofile } = await videofileRendering()
-
-          hookUploadInput({
-            videofile,
-            clonedVideofile,
-            helperPlugin
-          })
+          hookUploadInput(helperPlugin, await videofileRendering())
         }
       }
     }
@@ -188,23 +159,15 @@ class HelperPlugin {
   constructor (peertubeHelpers) {
     this.peertubeHelpers = peertubeHelpers
     this.settings = {}
-    this.translations = {}
     this.needMediaInfoLib = false
   }
 
-  async getSettings () {
-    this.settings = await this.peertubeHelpers.getSettings()
-    this.needMediaInfoLib = this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined
-
-    return this
-  }
-
-  getTranslation (limit) {
-    return this.peertubeHelpers.translate(`upload-limits-client-${limit}-error`)
-      .then(translation => {
-        this.translations[`${limit}Error`] = translation
-
-        return translation
+  lazyLoad () {
+    return this.peertubeHelpers.getSettings()
+      .then(settings => {
+        this.settings = settings
+        this.needMediaInfoLib = settings.videoBitrate !== undefined || settings.audioBitrate !== undefined
+        if (this.needMediaInfoLib) this.loadMediaInfoLib().catch(handleError)
       })
   }
 
@@ -212,27 +175,5 @@ class HelperPlugin {
     return import('mediainfo.js')
       .then(module => module.default)
       .then(() => MediaInfo)
-  }
-
-  lazyLoadTranslations () {
-    const promises = []
-
-    if (this.settings.fileSize !== undefined) {
-      promises.push(this.getTranslation('fileSize'))
-    }
-
-    if (this.settings.videoBitrate !== undefined) {
-      promises.push(this.getTranslation('videoBitrate'))
-    }
-
-    if (this.settings.audioBitrate !== undefined) {
-      promises.push(this.getTranslation('audioBitrate'))
-    }
-
-    if (this.settings.fileSize !== undefined || this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined) {
-      promises.push(this.getTranslation('toastTitle'))
-    }
-
-    return Promise.all(promises)
   }
 }

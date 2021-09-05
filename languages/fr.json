@@ -1,7 +1,5 @@
 {
-  "upload-limits-client-fileSize-error": "Le taille du fichier excède le maximum autorisé :",
-  "upload-limits-client-videoBitrate-error": "Le débit binaire vidéo excède le maximum autorisé :",
-  "upload-limits-client-audioBitrate-error": "Le débit binaire audio excède le maximum autorisé :",
-  "upload-limits-client-toastTitle-error": "Erreur",
-  "upload-limits-client-instructionsTitle": "Instructions de téléversement"
+  "File size exceeds the maximum allowed:": "Le taille du fichier excède le maximum autorisé :",
+  "Video bit rate exceeds the maximum allowed:": "Le débit binaire vidéo excède le maximum autorisé :",
+  "Audio bit rate exceeds the maximum allowed:": "Le débit binaire audio excède le maximum autorisé :"
 }

@@ -34,7 +34,6 @@
   },
   "translations": {
     "fr-FR": "./languages/fr.json",
-    "en-US": "./languages/en.json",
     "pl-PL": "./languages/pl.json"
   },
   "dependencies": {

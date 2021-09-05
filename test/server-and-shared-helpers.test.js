@@ -25,21 +25,21 @@ test('shared-helpers - readChunk Comparison', async t => {
 test('shared-helpers - checkLimits - no exceed', testCheckLimits, { fileSize: '10', videoBitrate: '10', audioBitrate: '384' })
 
 test('shared-helpers - checkLimits - exceeded size', testCheckLimits, { fileSize: '1' }, {
-  message: 'FileSize exceeds 1 Mo.'
+  message: 'File size exceeds the maximum allowed: 1 Mo.'
 })
 
 test('shared-helpers - checkLimits - exceeded video bitrate', testCheckLimits, { videoBitrate: '1' }, {
-  message: 'VideoBitrate exceeds 1 Mbps.'
+  message: 'Video bit rate exceeds the maximum allowed: 1 Mbps.'
 })
 
 test('shared-helpers - checkLimits - exceeded audio bitrate', testCheckLimits, { audioBitrate: '10' }, {
-  message: 'AudioBitrate exceeds 10 kbps.'
+  message: 'Audio bit rate exceeds the maximum allowed: 10 kbps.'
 })
 
 test('shared-helpers - checkLimits - exceeded all', testCheckLimits, { fileSize: '1', videoBitrate: '1', audioBitrate: '10' }, {
-  message: `FileSize exceeds 1 Mo.
-VideoBitrate exceeds 1 Mbps.
-AudioBitrate exceeds 10 kbps.`
+  message: `File size exceeds the maximum allowed: 1 Mo.
+Video bit rate exceeds the maximum allowed: 1 Mbps.
+Audio bit rate exceeds the maximum allowed: 10 kbps.`
 })
 
 async function testCheckLimits (t, limits, expectedError) {
