@@ -51,6 +51,7 @@
     "vite": "^2.5.3"
   },
   "scripts": {
+    "test": "ava -v",
     "build": "vite build"
   },
   "ava": {
