@@ -101,21 +101,12 @@ function hookUploadInput ({
       disableInputFile(clonedVideofile)
 
       try {
-        const mediaInfoModuleFilePath = `${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`
-
-        // Load MediaInfo.js lib and fetch MediaInfoModule.wasm to ensure fully cached
-        let MediaInfoFactory
-        if (needMediaInfoLib) {
-          MediaInfoFactory = await loadMediaInfoLib()
-          await fetch(mediaInfoModuleFilePath)
-        }
-
         await checkLimits({
-          MediaInfoFactory,
+          MediaInfoFactory: needMediaInfoLib ? await loadMediaInfoLib() : undefined,
           getSize: () => file.size,
           readChunk: readChunkBrowser(file),
           limits: settings,
-          locateFile: () => mediaInfoModuleFilePath,
+          locateFile: () => `${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`,
           translations: helperPlugin.translations
         })
 
