@@ -1,6 +1,10 @@
 import { disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
+export {
+  register
+}
+
 async function register ({ registerHook, peertubeHelpers }) {
   if (peertubeHelpers.isLoggedIn()) {
     // Init plugin helper
@@ -97,18 +101,21 @@ function hookUploadInput ({
       disableInputFile(clonedVideofile)
 
       try {
+        const mediaInfoModuleFilePath = `${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`
+
         // Load MediaInfo.js lib and fetch MediaInfoModule.wasm to ensure fully cached
-        let MediaInfo
+        let MediaInfoFactory
         if (needMediaInfoLib) {
-          MediaInfo = await loadMediaInfoLib()
-          await fetch(`${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`)
+          MediaInfoFactory = await loadMediaInfoLib()
+          await fetch(mediaInfoModuleFilePath)
         }
 
         await checkLimits({
-          MediaInfo,
+          MediaInfoFactory,
           getSize: () => file.size,
           readChunk: readChunkBrowser(file),
           limits: settings,
+          locateFile: () => mediaInfoModuleFilePath,
           translations: helperPlugin.translations
         })
 
@@ -248,7 +255,9 @@ class HelperPlugin {
   }
 
   loadMediaInfoLib () {
-    return import(/* webpackChunkName: "mediainfo" */ 'mediainfo.js').then(module => module.default)
+    return import('mediainfo.js')
+      .then(module => module.default)
+      .then(() => MediaInfo)
   }
 
   lazyLoadTranslations () {
@@ -278,8 +287,4 @@ class HelperPlugin {
 
     return Promise.all(promises)
   }
-}
-
-export {
-  register
 }

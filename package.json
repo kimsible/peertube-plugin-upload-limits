@@ -4,43 +4,31 @@
   "version": "0.4.1",
   "author": "kimsible",
   "license": "AGPL-3.0",
+  "keywords": [
+    "peertube",
+    "plugin"
+  ],
+  "homepage": "https://github.com/kimsible/peertube-plugin-upload-limits",
   "bugs": "https://github.com/kimsible/peertube-plugin-upload-limits/issues",
+  "engine": {
+    "peertube": ">=2.2.0"
+  },
+  "library": "./main.js",
   "clientScripts": [
     {
       "script": "dist/common-client-plugin.js",
       "scopes": [
         "common"
       ]
+    },
+    {
+      "script": "dist/mediainfo.js",
+      "scopes": []
     }
   ],
   "css": [
     "helpers/client-helpers.css"
   ],
-  "devDependencies": {
-    "ava": "^3.15.0",
-    "browser-env": "^3.3.0",
-    "copy-webpack-plugin": "^9.0.1",
-    "dotenv": "^10.0.0",
-    "husky": "^7.0.2",
-    "lint-staged": "^11.1.2",
-    "standard": "^16.0.3",
-    "string-replace-loader": "^3.0.3",
-    "webpack": "^5.51.1",
-    "webpack-cli": "^4.8.0"
-  },
-  "engine": {
-    "peertube": ">=2.2.0"
-  },
-  "homepage": "https://github.com/kimsible/peertube-plugin-upload-limits",
-  "keywords": [
-    "peertube",
-    "plugin"
-  ],
-  "library": "./main.js",
-  "scripts": {
-    "dev": "webpack --env dev",
-    "build": "webpack --env prod"
-  },
   "staticDirs": {
     "assets": "./dist/assets"
   },
@@ -50,7 +38,20 @@
     "pl-PL": "./languages/pl.json"
   },
   "dependencies": {
-    "mediainfo.js": "^0.1.5"
+    "mediainfo.js": "^0.1.6"
+  },
+  "devDependencies": {
+    "ava": "^3.15.0",
+    "browser-env": "^3.3.0",
+    "husky": "^7.0.2",
+    "lint-staged": "^11.1.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "standard": "^16.0.3",
+    "vite": "^2.5.3"
+  },
+  "scripts": {
+    "build": "vite build"
   },
   "ava": {
     "require": [
@@ -62,7 +63,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged && vite build"
     }
   },
   "lint-staged": {
@@ -74,7 +75,8 @@
       "WebAssembly",
       "Event",
       "MutationObserver",
-      "HTMLElement"
+      "HTMLElement",
+      "MediaInfo"
     ]
   }
 }

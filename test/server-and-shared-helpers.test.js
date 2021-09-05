@@ -1,5 +1,5 @@
 const test = require('ava')
-const MediaInfo = require('mediainfo.js')
+const MediaInfoFactory = require('mediainfo.js')
 
 const { promises: { readFile, open } } = require('fs')
 const { readChunkBrowser, checkLimits } = require('../helpers/shared-helpers.js')
@@ -50,9 +50,9 @@ async function testCheckLimits (t, limits, expectedError) {
   const readChunk = readChunkNode(fileHandle)
 
   if (expectedError) {
-    await t.throwsAsync(() => checkLimits({ MediaInfo, getSize, readChunk, limits }), expectedError)
+    await t.throwsAsync(() => checkLimits({ MediaInfoFactory, getSize, readChunk, limits }), expectedError)
   } else {
-    await t.notThrowsAsync(() => checkLimits({ MediaInfo, getSize, readChunk, limits }))
+    await t.notThrowsAsync(() => checkLimits({ MediaInfoFactory, getSize, readChunk, limits }))
   }
 
   await fileHandle.close()

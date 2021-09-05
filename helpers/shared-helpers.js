@@ -1,8 +1,9 @@
 async function checkLimits ({
-  MediaInfo,
+  MediaInfoFactory,
   getSize,
   readChunk,
   limits,
+  locateFile,
   translations = { fileSizeError: 'FileSize exceeds', videoBitrateError: 'VideoBitrate exceeds', audioBitrateError: 'AudioBitrate exceeds' }
 }) {
   let errors = []
@@ -12,8 +13,8 @@ async function checkLimits ({
     }
   }
 
-  if (MediaInfo !== undefined && (limits.videoBitrate || limits.audioBitrate)) {
-    const mediainfo = await MediaInfo()
+  if (MediaInfoFactory !== undefined && (limits.videoBitrate || limits.audioBitrate)) {
+    const mediainfo = await MediaInfoFactory({ locateFile })
 
     const { media } = await mediainfo.analyzeData(getSize, readChunk)
 
