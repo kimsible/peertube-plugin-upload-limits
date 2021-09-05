@@ -32,30 +32,10 @@ async function register ({ registerHook, peertubeHelpers }) {
 
 async function handler (helperPlugin) {
   try {
-    const [
-      { hasInstructions },
-      { videofile, clonedVideofile }
-    ] = await Promise.all([
+    const [ {}, { videofile, clonedVideofile }] = await Promise.all([
       loadSettings(helperPlugin),
       videofileRendering(helperPlugin)
     ])
-
-    if (hasInstructions) {
-      // Make sure instructions are cached
-      helperPlugin.instructions()
-        .catch(handleError)
-        .then(({ title, content }) => {
-          const { showModal } = helperPlugin.peertubeHelpers
-
-          showModal({
-            title,
-            content,
-            confirm: {
-              value: 'OK'
-            }
-          })
-        })
-    }
 
     hookUploadInput({
       videofile,
@@ -135,9 +115,8 @@ function handleError (error) {
 
 function loadSettings (helperPlugin) {
   return helperPlugin.getSettings()
-    .then(({ hasInstructions, needMediaInfoLib }) => {
+    .then(({ needMediaInfoLib }) => {
       helperPlugin.lazyLoadTranslations().catch(handleError)
-      if (hasInstructions) helperPlugin.instructions().catch(handleError)
       if (needMediaInfoLib) helperPlugin.loadMediaInfoLib().catch(handleError)
 
       return helperPlugin
@@ -210,30 +189,14 @@ class HelperPlugin {
     this.peertubeHelpers = peertubeHelpers
     this.settings = {}
     this.translations = {}
-    this.instructionsHTML = ''
     this.needMediaInfoLib = false
-    this.hasInstructions = false
   }
 
   async getSettings () {
     this.settings = await this.peertubeHelpers.getSettings()
     this.needMediaInfoLib = this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined
-    this.hasInstructions = this.settings.instructions && true
 
     return this
-  }
-
-  async instructions () {
-    if (this.instructionsHTML.length === 0) {
-      const { markdownRenderer } = this.peertubeHelpers
-      const html = await markdownRenderer.enhancedMarkdownToHTML(this.settings.instructions)
-      this.instructionsHTML = html
-    }
-
-    return {
-      title: this.translations.instructionsTitle || 'Upload instructions',
-      content: this.instructionsHTML
-    }
   }
 
   getTranslation (limit) {
@@ -268,12 +231,6 @@ class HelperPlugin {
 
     if (this.settings.fileSize !== undefined || this.settings.videoBitrate !== undefined || this.settings.audioBitrate !== undefined) {
       promises.push(this.getTranslation('toastTitle'))
-    }
-
-    if (this.settings.instructions !== undefined) {
-      promises.push(this.peertubeHelpers.translate('upload-limits-client-instructionsTitle').then(title => {
-        this.translations.instructionsTitle = title
-      }))
     }
 
     return Promise.all(promises)
