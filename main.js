@@ -25,12 +25,16 @@ async function register ({ registerSetting, settingsManager, registerHook }) {
     private: false
   })
 
-  registerSetting({
-    name: 'instructions',
-    label: 'Instructions - DEPRECATED, please now use upload-instructions plugin',
-    type: 'markdown-enhanced',
-    private: false
-  })
+  const instructions = await settingsManager.getSetting('instructions')
+
+  if (instructions) {
+    registerSetting({
+      name: 'instructions',
+      label: 'Instructions - DEPRECATED - please use upload-instructions plugin instead',
+      type: 'markdown-enhanced',
+      private: false
+    })
+  }
 
   registerHook({
     target: 'filter:api.video.upload.accept.result',
