@@ -1,7 +1,7 @@
 {
   "name": "peertube-plugin-upload-limits",
   "description": "Defining and checking upload limits with MediaInfo",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "kimsible",
   "license": "AGPL-3.0",
   "keywords": [
