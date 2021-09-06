@@ -23,7 +23,24 @@ function enableInputFile (input) {
   input.removeAttribute('disabled')
 }
 
+function dispatchChangeEventToInputFile (input) {
+  input.removeAttribute('disabled')
+  input.dispatchEvent(new Event('change'))
+}
+
+function cloneInputFile (input) {
+  const clonedInput = input.cloneNode(true)
+  clonedInput.setAttribute('id', 'cloned-inputfile')
+  input.setAttribute('style', 'display:none')
+  input.setAttribute('disabled', true)
+  input.parentElement.appendChild(clonedInput)
+
+  return { inputFile: input, clonedInputFile: clonedInput }
+}
+
 module.exports = {
   disableInputFile,
-  enableInputFile
+  enableInputFile,
+  dispatchChangeEventToInputFile,
+  cloneInputFile
 }

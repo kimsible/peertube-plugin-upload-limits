@@ -1,11 +1,16 @@
 const test = require('ava')
 
-const { disableInputFile, enableInputFile } = require('../helpers/client-helpers.js')
+const {
+  disableInputFile,
+  enableInputFile,
+  cloneInputFile
+} = require('../helpers/client-helpers.js')
 
 test('client-helpers - disableInputFile - with spinner', testDisableEnableInputFile, true, true)
 test('client-helpers - disableInputFile - without spinner', testDisableEnableInputFile, true, false)
 test('client-helpers - enableInputFile', testDisableEnableInputFile, false)
 test('client-helpers - disableEnableInputFile', testDisableEnableInputFile, 'toggle', true)
+test('client-helpers - cloneInputFile', testCloneInputFile, '<input name="input-file" type="file" />')
 
 function testDisableEnableInputFile (t, disable, spinner) {
   const container = document.createElement('div')
@@ -38,4 +43,19 @@ function testDisableEnableInputFile (t, disable, spinner) {
     t.is(span.innerText, innerText)
     t.not(span.classList.value, 'disabled-input-spinner')
   }
+}
+
+function testCloneInputFile (t, input) {
+  const container = document.createElement('div')
+  container.innerHTML = input
+
+  const { clonedInputFile, inputFile } = cloneInputFile(container.firstChild)
+
+  t.is(inputFile.name, container.firstChild.name)
+  t.is(clonedInputFile.type, container.firstChild.type)
+  t.is(clonedInputFile.name, container.firstChild.name)
+  t.is(clonedInputFile.id, 'cloned-inputfile')
+  t.is(container.firstChild.style.display, 'none')
+  t.is(container.firstChild.disabled, true)
+  t.is(clonedInputFile.parentElement.tagName, container.tagName)
 }

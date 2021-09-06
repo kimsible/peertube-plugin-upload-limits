@@ -1,4 +1,9 @@
-import { disableInputFile, enableInputFile } from '../helpers/client-helpers.js'
+import {
+  disableInputFile,
+  enableInputFile,
+  cloneInputFile,
+  dispatchChangeEventToInputFile,
+} from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
 export {
@@ -18,38 +23,25 @@ async function register ({ registerHook, peertubeHelpers }) {
       target: 'action:router.navigation-end',
       handler: ({ path }) => {
         if (path === '/videos/upload') {
-          handler(helperPlugin)
+          createContentObserver(videofile => {
+            hookUploadInput(helperPlugin, cloneInputFile(videofile)) // Clone and hide the videofile input to not dispatch-event default upload
+          })
         }
       }
     })
 
     // Run when refresh or manually enter /videos/upload route in browser
     if (window.location.pathname === '/videos/upload') {
-      handler(helperPlugin)
+      createContentObserver(videofile => {
+        hookUploadInput(helperPlugin, cloneInputFile(videofile))
+      })
     }
   }
 }
 
-async function handler (helperPlugin) {
-  try {
-    hookUploadInput(helperPlugin, await videofileRendering(helperPlugin))
-  } catch (error) {
-    handleError(error)
-  }
-}
-
-function handleError (error) {
-  console.error(error)
-}
-
-function hookUploadInput (helperPlugin, { videofile, clonedVideofile}) {
-  const dispatchChangeToOriginVideofile = () => {
-    videofile.removeAttribute('disabled')
-    videofile.dispatchEvent(new Event('change'))
-  }
-
-  clonedVideofile.addEventListener('change', async () => {
-    const file = clonedVideofile.files[0]
+function hookUploadInput (helperPlugin, { inputFile, clonedInputFile }) {
+  clonedInputFile.addEventListener('change', async () => {
+    const file = clonedInputFile.files[0]
 
     if (file) {
       const {
@@ -62,14 +54,13 @@ function hookUploadInput (helperPlugin, { videofile, clonedVideofile}) {
       const { fileSize } = settings
       if (!fileSize && !needMediaInfoLib) {
         // Copy FileList to original videofile input and dispatch-event change
-        videofile.files = clonedVideofile.files
-
-        dispatchChangeToOriginVideofile()
+        inputFile.files = clonedInputFile.files
+        dispatchChangeEventToInputFile(inputFile)
         return
       }
 
       // Disable cloned videofile input to display spinner while checking limits
-      disableInputFile(clonedVideofile)
+      disableInputFile(clonedInputFile)
 
       try {
         await checkLimits({
@@ -81,9 +72,8 @@ function hookUploadInput (helperPlugin, { videofile, clonedVideofile}) {
         })
 
         // Copy FileList to original videofile input and dispatch-event change
-        videofile.files = clonedVideofile.files
-
-        dispatchChangeToOriginVideofile()
+        inputFile.files = clonedInputFile.files
+        dispatchChangeEventToInputFile(inputFile)
       } catch (error) {
         const { notifier, translate } = peertubeHelpers
 
@@ -94,65 +84,30 @@ function hookUploadInput (helperPlugin, { videofile, clonedVideofile}) {
         })
 
         // Restore original label text and re-enable cloned video file
-        enableInputFile(clonedVideofile)
+        enableInputFile(clonedInputFile)
       }
     }
   })
 }
 
-async function videofileRendering (helperPlugin) {
-  // Waiting for DOMContent updated with a timeout of 5 seconds
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      clearInterval(interval)
-      reject(new Error('DOMContent cannot be loaded'))
-    }, 5000)
-
-    // Waiting for videofile input in DOM
-    const interval = setInterval(() => {
-      if (document.getElementById('videofile') !== null) {
-        clearTimeout(timeout)
-        clearInterval(interval)
-        resolve()
-      }
-    }, 10)
-  })
-
-  const videofile = document.getElementById('videofile')
-
-  // First rendering
-  if (helperPlugin) {
-    createComponentObserver(helperPlugin)
-  }
-
-  // Clone and hide the videofile input to not dispatch-event default upload
-  const clonedVideofile = videofile.cloneNode(true)
-  clonedVideofile.setAttribute('id', 'cloned-videofile')
-  videofile.setAttribute('style', 'display:none')
-  videofile.setAttribute('disabled', true)
-  videofile.parentElement.appendChild(clonedVideofile)
-
-  return { videofile, clonedVideofile }
-}
-
-function createComponentObserver (helperPlugin) {
-  const component = document.querySelector('my-videos-add')
+function createContentObserver (callback) {
+  const content = document.getElementById('content')
 
   const observer = new MutationObserver(async mutations => {
     for (const mutation of mutations) {
       const { type, addedNodes } = mutation
 
-      // Re-run hookUploadInput if my-video-upload component is re-loaded
-      const node = addedNodes[0]
-      if (type === 'childList' && node instanceof HTMLElement) {
-        if (/my-video-upload/i.test(node.parentElement.tagName) && /upload-video-container/.test(node.classList.value)) {
-          hookUploadInput(helperPlugin, await videofileRendering())
-        }
+      if (type === 'childList') {
+        addedNodes.forEach(node => {
+          if (node instanceof HTMLElement && /my-video-upload/i.test(node.tagName)) {
+            callback(node.querySelector('#videofile'))
+          }
+        })
       }
     }
   })
 
-  observer.observe(component, { childList: true, subtree: true })
+  observer.observe(content, { childList: true, subtree: true })
 }
 
 class HelperPlugin {
@@ -167,7 +122,7 @@ class HelperPlugin {
       .then(settings => {
         this.settings = settings
         this.needMediaInfoLib = settings.videoBitrate !== undefined || settings.audioBitrate !== undefined
-        if (this.needMediaInfoLib) this.loadMediaInfoLib().catch(handleError)
+        if (this.needMediaInfoLib) this.loadMediaInfoLib().catch(error => console.error(error))
       })
   }
 
