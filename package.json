@@ -51,6 +51,7 @@
   },
   "scripts": {
     "test": "ava -v",
+    "prepare": "vite build",
     "build": "vite build"
   },
   "ava": {
@@ -63,7 +64,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && vite build"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
