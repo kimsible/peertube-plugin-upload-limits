@@ -28,7 +28,8 @@ export default ({ mode }) => {
       },
       rollupOptions: {
         output: {
-          chunkFileNames: '[name].js'
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: 'assets/[name][extname]'
         }
       }
     },
@@ -39,7 +40,7 @@ export default ({ mode }) => {
         flatten: true,
         hook: 'writeBundle',
         targets: [
-          { src: 'node_modules/mediainfo.js/dist/MediaInfoModule.wasm', dest: 'dist/assets' }
+          { src: 'node_modules/mediainfo.js/dist/MediaInfoModule.wasm', dest: 'dist/assets/static' }
         ]
       })
     ]

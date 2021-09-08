@@ -1,9 +1,5 @@
-import {
-  disableInputFile,
-  enableInputFile,
-  cloneInputFile,
-  dispatchChangeEventToInputFile,
-} from '../helpers/client-helpers.js'
+import { spinner } from './spinner.module.css'
+import { clone } from '../helpers/client-helpers.js'
 import { checkLimits, readChunkBrowser } from '../helpers/shared-helpers.js'
 
 export {
@@ -13,69 +9,58 @@ export {
 async function register ({ registerHook, peertubeHelpers }) {
   if (peertubeHelpers.isLoggedIn()) {
     // Init plugin helper
-    const helperPlugin = new HelperPlugin(peertubeHelpers)
+    const helper = new HelperPlugin(peertubeHelpers)
 
     // Pre-load plugin settings and libraries
-    helperPlugin.lazyLoad()
+    await helper.lazyLoad()
 
     // Run when route is /videos/upload
     registerHook({
       target: 'action:router.navigation-end',
       handler: ({ path }) => {
         if (path === '/videos/upload') {
-          createContentObserver(videofile => {
-            hookUploadInput(helperPlugin, cloneInputFile(videofile)) // Clone and hide the videofile input to not dispatch-event default upload
-          })
+          connect(hook.bind(helper))
         }
       }
     })
 
     // Run when refresh or manually enter /videos/upload route in browser
     if (window.location.pathname === '/videos/upload') {
-      createContentObserver(videofile => {
-        hookUploadInput(helperPlugin, cloneInputFile(videofile))
-      })
+      connect(hook.bind(helper))
     }
   }
 }
 
-function hookUploadInput (helperPlugin, { inputFile, clonedInputFile }) {
-  clonedInputFile.addEventListener('change', async () => {
-    const file = clonedInputFile.files[0]
+function hook (input) {
+  // No settings defined - no hook
+  if (!this.settings.fileSize && !this.needMediaInfoLib) return
+
+  // Clone and hide the videofile input to not dispatch-event default upload
+  clone(input).addEventListener('change', async ({ target: cloned }) => {
+    const file = cloned.files[0]
 
     if (file) {
-      const {
-        settings,
-        needMediaInfoLib,
-        peertubeHelpers,
-        loadMediaInfoLib
-      } = helperPlugin
-
-      const { fileSize } = settings
-      if (!fileSize && !needMediaInfoLib) {
-        // Copy FileList to original videofile input and dispatch-event change
-        inputFile.files = clonedInputFile.files
-        dispatchChangeEventToInputFile(inputFile)
-        return
-      }
+      const parentClassName = cloned.parentElement.className
 
       // Disable cloned videofile input to display spinner while checking limits
-      disableInputFile(clonedInputFile)
+      cloned.setAttribute('disabled', true)
+      cloned.parentElement.className = `${parentClassName} ${spinner}`
 
       try {
         await checkLimits({
-          MediaInfoFactory: needMediaInfoLib ? await loadMediaInfoLib() : undefined,
+          MediaInfoFactory: this.needMediaInfoLib ? await this.loadMediaInfoLib() : undefined,
           getSize: () => file.size,
           readChunk: readChunkBrowser(file),
-          limits: settings,
-          locateFile: () => `${peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`,
+          limits: this.settings,
+          locateFile: () => `${this.peertubeHelpers.getBaseStaticRoute()}/assets/MediaInfoModule.wasm`,
         })
 
         // Copy FileList to original videofile input and dispatch-event change
-        inputFile.files = clonedInputFile.files
-        dispatchChangeEventToInputFile(inputFile)
+        input.files = cloned.files
+        input.removeAttribute('disabled')
+        input.dispatchEvent(new Event('change'))
       } catch (error) {
-        const { notifier, translate } = peertubeHelpers
+        const { notifier, translate } = this.peertubeHelpers
 
         // Notify user with as toast as errors
         error.message.split('\n').forEach(async error => {
@@ -84,13 +69,17 @@ function hookUploadInput (helperPlugin, { inputFile, clonedInputFile }) {
         })
 
         // Restore original label text and re-enable cloned video file
-        enableInputFile(clonedInputFile)
+        cloned.removeAttribute('disabled')
+        cloned.parentElement.className = parentClassName
       }
     }
   })
 }
 
-function createContentObserver (callback) {
+function connect (callback) {
+  const videofile = document.getElementById('videofile')
+  if (videofile) callback(videofile) // if videofile already rendered
+
   const content = document.getElementById('content')
 
   const observer = new MutationObserver(mutations => {

@@ -1,12 +1,19 @@
-.disabled-input-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 19px;
-  vertical-align: middle;
+.spinner {
+  composes: disabled from global;
 }
 
-.disabled-input-spinner:after {
-  content: " ";
+.spinner span {
+  color: transparent;
+  width: 15px;
+  height: 19px;
+  vertical-align: middle;
+  display: inline-block;
+  position: relative;
+}
+
+.spinner span::before {
+  content: ' ';
+  position: absolute;
   display: block;
   width: 15px;
   height: 15px;
@@ -14,10 +21,10 @@
   border-radius: 50%;
   border: 2px solid #fff;
   border-color: #fff transparent #fff transparent;
-  animation: disabled-input-spinner 1.2s linear infinite;
+  animation: spinnerAnimation 1.2s linear infinite;
 }
 
-@keyframes disabled-input-spinner {
+@keyframes spinnerAnimation {
   0% {
     transform: rotate(0deg);
   }

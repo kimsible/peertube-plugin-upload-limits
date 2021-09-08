@@ -22,15 +22,15 @@
       ]
     },
     {
-      "script": "dist/mediainfo.js",
+      "script": "dist/assets/mediainfo.js",
       "scopes": []
     }
   ],
   "css": [
-    "helpers/client-helpers.css"
+    "dist/assets/style.css"
   ],
   "staticDirs": {
-    "assets": "./dist/assets"
+    "assets": "./dist/assets/static"
   },
   "translations": {
     "fr-FR": "./languages/fr.json",
@@ -47,6 +47,7 @@
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-livereload": "^2.0.5",
     "standard": "^16.0.3",
+    "uhtml": "^2.7.6",
     "vite": "^2.5.6"
   },
   "scripts": {
