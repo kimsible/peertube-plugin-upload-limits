@@ -93,17 +93,23 @@ function hookUploadInput (helperPlugin, { inputFile, clonedInputFile }) {
 function createContentObserver (callback) {
   const content = document.getElementById('content')
 
-  const observer = new MutationObserver(async mutations => {
-    for (const mutation of mutations) {
-      const { type, addedNodes } = mutation
+  const observer = new MutationObserver(mutations => {
+    for (const { addedNodes, removedNodes } of mutations) {
+      addedNodes.forEach(node => {
+        if (node.localName === 'my-video-upload') {
+          callback(node.querySelector('#videofile'))
+        }
 
-      if (type === 'childList') {
-        addedNodes.forEach(node => {
-          if (node instanceof HTMLElement && /my-video-upload/i.test(node.tagName)) {
-            callback(node.querySelector('#videofile'))
-          }
-        })
-      }
+        if (node.localName === 'my-video-edit') { // if component of video-editing is added - disconnect
+          observer.disconnect()
+        }
+      })
+
+      removedNodes.forEach(node => {
+        if (node.localName === 'my-videos-add') { // if main-component is removed - disconnect
+          observer.disconnect()
+        }
+      })
     }
   })
 
